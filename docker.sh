@@ -1,0 +1,96 @@
+#!/bin/bash -e
+
+PROG=$(basename $0)
+PROG_DIR=$(dirname $0)
+
+function usage {
+    cat <<EOF 1>&2
+usage: $PROG [options...] SOURCEDIR
+Options:
+  -i IMAGE   Name of the docker image (including tag) to use as package build environment.
+  -o DIR     Destination directory to store packages to.
+  -d DIR     Directory that contains other deb packages that need to be installed before build.
+  -t PACKAGE Test package sitting in output directory.
+EOF
+    exit 1
+}
+
+function fatal {
+    echo "$PROG: ${1:-"Unknown Error"}" 1>&2
+    exit 1
+}
+
+function abspath {
+    echo $(cd "$1" && pwd)
+}
+
+
+###########################################################################
+
+[[ $# -eq 0 ]] && usage
+
+while getopts "i:o:d:t:h" opt; do
+    case $opt in
+        i)
+            image="$OPTARG"
+            ;;
+        o)
+            outdir="$OPTARG"
+            ;;
+        d)
+            depdir="$OPTARG"
+            ;;
+        t)
+            testpack="$OPTARG"
+            ;;
+        h)
+            usage
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+shift $(($OPTIND - 1))
+srcdir=$1
+docker_args="-it "
+
+# Check that mandatory parameters are valid
+[[ !    "$outdir"        ]] && fatal "output directory was not given (-o DIR)"
+[[ ! -d "$outdir"        ]] && fatal "output directory does not exist: $outdir"
+[[ !    "$srcdir"        ]] && fatal "source directory not given"
+[[ ! -r "$srcdir/debian" ]] && fatal "source direcotry does not contain debian sub directory"
+[[ !    "$image"         ]] && fatal "docker image name not given (-i IMAGE)"
+
+# Check that optional parameters are valid
+if [[ "$depdir" ]]; then
+    [[ ! -d "$depdir" ]] && fatal "dependency directory given but does not exist: $depdir"
+    docker_args+="-v $(abspath "$depdir"):/dependencies:ro "
+fi
+
+if [ -z "$testpack" ]; then
+  docker_args+="-v $(abspath "$srcdir"):/source-ro:ro -v $(abspath "$outdir"):/output -v $(cd $PROG_DIR; pwd)/build-helper.sh:/build-helper.sh:ro "
+else
+  docker_args+="-v $(abspath "$srcdir"):/source-ro:ro -v $(abspath "$outdir"):/output -v $(cd $PROG_DIR; pwd)/test-helper.sh:/test-helper.sh:ro "
+fi
+
+# Pass current UID and GID to container, so that it can change the
+# ownership of output files which are otherwise writen to outdir as
+# root
+docker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
+
+# Comment following out if you want to keep container after execution
+# for debugging
+docker_args+="--rm "
+
+if [ -z "$testpack" ]; then
+  cmd="docker run -it $docker_args $image /build-helper.sh"
+else
+  cmd="docker run -it $docker_args $image /test-helper.sh"
+fi
+
+echo "Running docker:"
+echo "$cmd"
+
+exec $cmd

@@ -1,0 +1,61 @@
+DISTRO_NAME=focal
+DISTRO_VERSION=20.04
+
+CHECKSUM_CHECKS=true
+USE_CUSTOM_PATCHES=true
+USE_CUSTOM_CONFIGS=true
+
+# https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
+LATEST_OPENSSL=false
+# https://www.modpagespeed.com/
+PAGESPEED=true
+# https://github.com/google/ngx_brotli
+BROTLI=true
+# https://github.com/openresty/headers-more-nginx-module
+HEADERS_MORE=true
+# https://github.com/FRiCKLE/ngx_cache_purge
+CACHE_PURGE=true
+# https://github.com/vozlt/nginx-module-vts
+VTS=true
+# https://github.com/leev/ngx_http_geoip2_module
+GEOIP2=true
+# https://github.com/openresty/echo-nginx-module
+ECHO=true
+# https://github.com/SpiderLabs/ModSecurity-nginx
+MODSECURITY=true
+
+NGINX_VERSION=1.21.2
+NGINX_ORIG_SHA256=31771c560e46d73650568e8193cb94d981081f83dd62d1ba43af1a1e0ba25185
+NGINX_DEB_SHA256=86094601c83c070e694b1babec9e637bcf250dbd5c7fd6f5b46941738d17cb13
+
+OPENSSL_VERSION=1.1.1l
+OPENSSL_SHA256=0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1
+
+PAGESPEED_VERSION=v1.13.35.2-stable
+PAGESPEED_SHA256=68242a30308b21f13de9a36f2aea5c3e34e8a4c0b7c6a37d3369334f6f847d36
+
+PSOL_VERSION=1.13.35.2-x64
+PSOL_SHA256=df3ba3c8fc54e13845d0a1daa7a6e3d983126c23912851bbf8ba35be646a434f
+
+BROTLI_GITHUB=https://github.com/google/ngx_brotli
+
+HEADERS_MORE_VERSION=0.33
+HEADERS_MORE_SHA256=a3dcbab117a9c103bc1ea5200fc00a7b7d2af97ff7fd525f16f8ac2632e30fbf
+
+CACHE_PURGE_VERSION=2.3
+CACHE_PURGE_SHA256=cb7d5f22919c613f1f03341a1aeb960965269302e9eb23425ccaabd2f5dcbbec
+
+VTS_VERSION=0.1.18
+VTS_SHA256=17ea41d4083f6d1ab1ab83dad9160eeca66867abe16c5a0421f85a39d7c84b65
+
+GEOIP2_VERSION=3.3
+GEOIP2_SHA256=41378438c833e313a18869d0c4a72704b4835c30acaf7fd68013ab6732ff78a7
+
+ECHO_VERSION=0.62
+ECHO_SHA256=86f6866baf7297d85feb42ff6d9c212d1de696f3314a53d3a41a4b533a67ab01
+
+MODSECURITY_VERSION=1.0.2
+MODSECURITY_SHA256=41a6660c50508c60df59f8f09c444d18ef8112a4c118cdc791a3992390b78c32
+
+
+confs=("fpm-wordpress-cache.conf" "fpm-default.conf")
