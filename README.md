@@ -16,7 +16,7 @@ The idea for this project was inspired by [nginx-more](https://github.com/karljo
 *   [Cache purge](https://github.com/FRiCKLE/ngx_cache_purge)
 *   [GeoIP2](https://github.com/leev/ngx_http_geoip2_module)
 *   [Echo](https://github.com/openresty/echo-nginx-module)
-*   [ModSecurity](https://github.com/SpiderLabs/ModSecurity-nginx) (dynamic)
+*   [ModSecurity](https://github.com/SpiderLabs/ModSecurity-nginx)
 
 ## Patches
 
