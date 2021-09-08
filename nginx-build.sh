@@ -286,15 +286,19 @@ if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
   echo "/etc/nginx/conf.d/custom" >> nginx.dirs
   cp -f ${WORKPWD}/custom/configs/nginx.conf ${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/nginx.conf
   mkdir custom
-  cp -f ${WORKPWD}/custom/configs/*.conf custom/
-
-#  confs=("fpm-wordpress-cache.conf" "fpm-default.conf")
+  cp -f ${WORKPWD}/custom/configs/*.conf* custom/
   for i in "${confs[@]}"
   do
     sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/$i \$\(INSTALLDIR\)\/etc\/nginx\/conf.d\/custom\/$i" rules
     sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/$i \$\(INSTALLDIR\)\/etc\/nginx\/conf.d\/custom\/$i" nginx.rules.in
   done
+  sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" rules
+  sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" nginx.rules.in
 
+  sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" rules
+  sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" nginx.rules.in
+  sed -i "/^\tln -s \/usr.*/i \\\tln -fs \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" rules
+  sed -i "/^\tln -s \/usr.*/i \\\tln -fs \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" nginx.rules.in
   echo -e "OK"
 fi
 
