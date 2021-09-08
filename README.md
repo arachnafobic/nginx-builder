@@ -29,6 +29,8 @@ Be sure docker is installed.
 
 ```bash
 $ sudo apt install docker.io
+$ sudo usermod -aG docker $USER
+$ sudo setfacl -m user:$USER:rw /var/run/docker.sock
 ```
 
 Then run the full compile process with :
