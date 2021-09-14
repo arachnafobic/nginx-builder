@@ -17,6 +17,36 @@ if [ ! -d "src" ]; then
 fi
 cd src
 
+#for i in {0..1}; do
+#  if [ "${Sources[$i,Install]}" = true ]; then
+#    if [ ! -f "${Sources[$i,DLFinal]}" ]; then
+#      wget "${Sources[$i,DLUrl]}"
+#      if [ $? -ne 0 ]; then
+#        if [ ! -z "${Sources[$i,DLAltUrl]}" ]; then
+#          wget "${Sources[$i,DLAltUrl]}"
+#        else
+#          echo "Downloading ${Sources[$i,Install]} failed, no alternative url supplied."
+#        fi
+#      fi
+#    fi
+#    if [ "${Sources[$i,DLFile]}" != "${Sources[$i,DLFinal]}" ]; then
+#      if [ -f "${Sources[$i,DLFile]}" ]; then
+#        mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
+#      fi
+#    fi
+#    echo -ne "${Sources[$i,Package]} : "
+#    if [ "${CHECKSUM_CHECKS}" = true ]; then
+#      echo "${Sources[$i,DLSha256]}" "${Sources[$i,DLFinal]}" | sha256sum --check
+#      if [ $? -ne 0 ]; then
+#        echo "Checksum for ${Sources[$i,DLFinal]} did NOT match, aborting with return code $?"
+#        exit 1;
+#      fi
+#    fi
+#  fi
+#done
+#exit 0;
+
+
 if [ ! -f "nginx_${NGINX_VERSION}.orig.tar.gz" ]; then
   wget "http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
   if [ $? -ne 0 ]; then

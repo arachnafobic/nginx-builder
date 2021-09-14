@@ -1,3 +1,5 @@
+declare -A Sources
+
 DISTRO_NAME=focal
 DISTRO_VERSION=20.04
 
@@ -24,9 +26,9 @@ ECHO=true
 # https://github.com/SpiderLabs/ModSecurity-nginx
 MODSECURITY=true
 
-NGINX_VERSION=1.21.2
-NGINX_ORIG_SHA256=31771c560e46d73650568e8193cb94d981081f83dd62d1ba43af1a1e0ba25185
-NGINX_DEB_SHA256=86094601c83c070e694b1babec9e637bcf250dbd5c7fd6f5b46941738d17cb13
+NGINX_VERSION=1.21.3
+NGINX_ORIG_SHA256=14774aae0d151da350417efc4afda5cce5035056e71894836797e1f6e2d1175a
+NGINX_DEB_SHA256=2930f380bb93af1c3b54a60209922fc74241d6d1d20de4dd97f51e566773a718
 
 OPENSSL_VERSION=1.1.1l
 OPENSSL_SHA256=0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1
@@ -36,8 +38,6 @@ PAGESPEED_SHA256=68242a30308b21f13de9a36f2aea5c3e34e8a4c0b7c6a37d3369334f6f847d3
 
 PSOL_VERSION=1.13.35.2-x64
 PSOL_SHA256=df3ba3c8fc54e13845d0a1daa7a6e3d983126c23912851bbf8ba35be646a434f
-
-BROTLI_GITHUB=https://github.com/google/ngx_brotli
 
 HEADERS_MORE_VERSION=0.33
 HEADERS_MORE_SHA256=a3dcbab117a9c103bc1ea5200fc00a7b7d2af97ff7fd525f16f8ac2632e30fbf
@@ -57,5 +57,68 @@ ECHO_SHA256=86f6866baf7297d85feb42ff6d9c212d1de696f3314a53d3a41a4b533a67ab01
 MODSECURITY_VERSION=1.0.2
 MODSECURITY_SHA256=41a6660c50508c60df59f8f09c444d18ef8112a4c118cdc791a3992390b78c32
 
+BROTLI_GITHUB=https://github.com/google/ngx_brotli
 
+
+###
+# Edits below shouldn't be needed as long as urls don't change.
+###
 confs=("mailgun-tracking.conf" "fpm-wordpress-sub-cache-users.conf" "fpm-wordpress-sub-cache.conf" "fpm-wordpress-sub-users.conf" "fpm-wordpress-sub.conf" "fpm-wordpress-mu-cache.conf" "fpm-wordpress-mu-cache-users.conf" "fpm-wordpress-cache-users.conf" "fpm-wordpress-mu-users.conf" "restrictions-users.conf" "fpm-sendy-users.conf" "fpm-sendy.conf" "fpm-wordpress-users.conf" "fpm-laravel-users.conf" "fpm-default-users.conf" "blacklist.conf" "fpm-drupal.conf" "fpm-opencart.conf" "fpm-prestashop.conf" "pagespeed.conf" "cloudflare.conf" "ssl.global.conf" "admin-ips.conf" "restrictions.conf" "fpm-laravel.conf" "fpm-wordpress-mu.conf" "fpm-wordpress.conf" "fpm-wordpress-cache.conf" "fpm-default.conf")
+
+Sources[0,Package]="Nginx"
+Sources[0,Install]=true
+Sources[0,Version]="${NGINX_VERSION}"
+Sources[0,DLFile]="nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[0,DLUrl]="http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[0,DLAltUrl]="https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[0,DLSha256]="${NGINX_ORIG_SHA256}"
+Sources[0,DLFinal]="nginx_${NGINX_VERSION}.orig.tar.gz"
+
+Sources[1,Package]="Nginx Debian"
+Sources[1,Install]=true
+Sources[1,Version]="${NGINX_VERSION}"
+Sources[1,DLFile]="nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
+Sources[1,DLUrl]="http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
+Sources[1,DLAltUrl]="https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
+Sources[1,DLSha256]="${NGINX_DEB_SHA256}"
+Sources[1,DLFinal]="nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
+
+Sources[2,Package]="OpenSSL"
+Sources[2,Version]=""
+Sources[2,DLFile]=""
+Sources[2,DLUrl]=""
+Sources[2,DLAltUrl]=""
+Sources[2,DLSha256]=""
+Sources[2,DLFinal]=""
+
+Sources[3,Package]="Pagespeed"
+Sources[3,Version]=""
+Sources[3,DLFile]=""
+Sources[3,DLUrl]=""
+Sources[3,DLAltUrl]=""
+Sources[3,DLSha256]=""
+Sources[3,DLFinal]=""
+
+Sources[4,Package]="Pagespeed Psol"
+Sources[4,Version]=""
+Sources[4,DLFile]=""
+Sources[4,DLUrl]=""
+Sources[4,DLAltUrl]=""
+Sources[4,DLSha256]=""
+Sources[4,DLFinal]=""
+
+Sources[5,Package]="Headers More"
+Sources[5,Version]=""
+Sources[5,DLFile]=""
+Sources[5,DLUrl]=""
+Sources[5,DLAltUrl]=""
+Sources[5,DLSha256]=""
+Sources[5,DLFinal]=""
+
+# Sources[0,Package]=
+# Sources[0,Version]=
+# Sources[0,DLFile]=
+# Sources[0,DLUrl]=
+# Sources[0,DLAltUrl]=
+# Sources[0,DLSha256]=
+# Sources[0,DLFinal]=
