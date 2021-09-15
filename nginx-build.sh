@@ -76,9 +76,9 @@ for i in {0..11}; do
     fi
   fi
 done
-
 cd ${WORKPWD}
 # exit 0;
+
 
 # Setup build directory
 if [ ! -d "build" ]; then
@@ -93,9 +93,6 @@ tar -zxf ${WORKPWD}/src/nginx_${NGINX_VERSION}.orig.tar.gz
 cd nginx-${NGINX_VERSION}
 tar -xf ${WORKPWD}/src/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz
 cd debian
-if [ "${USE_CUSTOM_PATCHES}" = true ]; then
-  sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules
-fi
 mkdir modules
 cd modules
 if [ "${LATEST_OPENSSL}" = true ]; then
@@ -156,7 +153,6 @@ if [ "${BROTLI}" = true ]; then
 fi
 cd ${WORKPWD}/build/nginx-${NGINX_VERSION}
 if [ "${LATEST_OPENSSL}" = true ]; then
-  pwd
   patch -p0 < ${WORKPWD}/custom/patches/openssl-compile.patch
 fi
 if [ "${USE_CUSTOM_PATCHES}" = true ]; then
@@ -165,6 +161,7 @@ if [ "${USE_CUSTOM_PATCHES}" = true ]; then
     sed -i "s/@CACHEPVER@/${CACHE_PURGE_VERSION}/g" ${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch
     patch -p0 < ${WORKPWD}/custom/patches/nginx-version.patch
     cd debian
+    sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules
     patch -p0 < ${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch
     cd ..
     patch -p1 < ${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003.patch
@@ -197,10 +194,9 @@ if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
   sed -i "/^\tln -s \/usr.*/i \\\tln -s \/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" nginx.rules.in
   echo -e "OK"
 fi
-
-
 cd ${WORKPWD}
 # exit 0;
+
 
 # Build the package
 if [ ! -d "output" ]; then

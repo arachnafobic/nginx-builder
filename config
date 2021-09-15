@@ -8,7 +8,7 @@ USE_CUSTOM_PATCHES=true
 USE_CUSTOM_CONFIGS=true
 
 # https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
-LATEST_OPENSSL=false
+LATEST_OPENSSL=true
 # https://www.modpagespeed.com/
 PAGESPEED=true
 # https://github.com/google/ngx_brotli
