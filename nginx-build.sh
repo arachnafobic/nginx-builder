@@ -17,200 +17,65 @@ if [ ! -d "src" ]; then
 fi
 cd src
 
-#for i in {0..1}; do
-#  if [ "${Sources[$i,Install]}" = true ]; then
-#    if [ ! -f "${Sources[$i,DLFinal]}" ]; then
-#      wget "${Sources[$i,DLUrl]}"
-#      if [ $? -ne 0 ]; then
-#        if [ ! -z "${Sources[$i,DLAltUrl]}" ]; then
-#          wget "${Sources[$i,DLAltUrl]}"
-#        else
-#          echo "Downloading ${Sources[$i,Install]} failed, no alternative url supplied."
-#        fi
-#      fi
-#    fi
-#    if [ "${Sources[$i,DLFile]}" != "${Sources[$i,DLFinal]}" ]; then
-#      if [ -f "${Sources[$i,DLFile]}" ]; then
-#        mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
-#      fi
-#    fi
-#    echo -ne "${Sources[$i,Package]} : "
-#    if [ "${CHECKSUM_CHECKS}" = true ]; then
-#      echo "${Sources[$i,DLSha256]}" "${Sources[$i,DLFinal]}" | sha256sum --check
-#      if [ $? -ne 0 ]; then
-#        echo "Checksum for ${Sources[$i,DLFinal]} did NOT match, aborting with return code $?"
-#        exit 1;
-#      fi
-#    fi
-#  fi
-#done
-#exit 0;
-
-
-if [ ! -f "nginx_${NGINX_VERSION}.orig.tar.gz" ]; then
-  wget "http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
-  if [ $? -ne 0 ]; then
-    NGINX_ALT_URL=true
-    wget "https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
-  fi
-fi
-if [ "${CHECKSUM_CHECKS}" = true ]; then
-  echo ${NGINX_ORIG_SHA256} nginx_${NGINX_VERSION}.orig.tar.gz | sha256sum --check
-  if [ $? -ne 0 ]; then
-    echo "Checksum for nginx_${NGINX_VERSION}.orig.tar.gz did NOT match, aborting with return code $?"
-    exit 1;
-  fi
-fi
-
-if [ ! -f "nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz" ]; then
-  if [ "${NGINX_ALT_URL}" = true ]; then
-    wget "https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
-  else
-    wget "http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
-  fi
-fi
-if [ "${CHECKSUM_CHECKS}" = true ]; then
-  echo ${NGINX_DEB_SHA256} nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz | sha256sum --check
-  if [ $? -ne 0 ]; then
-    echo "Checksum for nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz did NOT match, aborting with return code $?"
-    exit 1;
-  fi
-fi
-
-if [ "${LATEST_OPENSSL}" = true ]; then
-  if [ ! -f "openssl-${OPENSSL_VERSION}.tar.gz" ]; then
-    wget "https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${OPENSSL_SHA256} openssl-${OPENSSL_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for openssl-${OPENSSL_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
+for i in {0..11}; do
+  if [ "${Sources[$i,Install]}" = true ]; then
+    if [ "${Sources[$i,Git]}" = true ]; then
+      if [ ! -d "${Sources[$i,DLFinal]}" ]; then
+        git clone --recursive "${Sources[$i,DLUrl]}"
+        if [ $? -ne 0 ]; then
+          echo "Something went wrong while cloning git repo for ${Sources[$i,Package]}"
+          exit 1;
+        fi
+        if [ "${Sources[$i,DLFile]}" != "${Sources[$i,DLFinal]}" ]; then
+          if [ -d "${Sources[$i,DLFile]}" ]; then
+            mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
+          fi
+        fi
+        echo "${Sources[$i,Package]} cloned: OK"
+      else
+        cd "${Sources[$i,DLFinal]}"
+        git pull --recurse-submodules
+        if [ $? -ne 0 ]; then
+          echo "Something went wrong while updating git repo for ${Sources[$i,Package]}"
+          exit 1;
+        fi
+        cd ..
+        echo "${Sources[$i,Package]} up2date: OK"
+      fi
+    else
+      if [ ! -f "${Sources[$i,DLFinal]}" ]; then
+        wget "${Sources[$i,DLUrl]}"
+        if [ $? -ne 0 ]; then
+          if [ ! -z "${Sources[$i,DLAltUrl]}" ]; then
+            wget "${Sources[$i,DLAltUrl]}"
+          else
+            echo "Downloading ${Sources[$i,Install]} failed, no alternative url supplied."
+          fi
+        fi
+      fi
+      if [ "${Sources[$i,DLFile]}" != "${Sources[$i,DLFinal]}" ]; then
+        if [ -f "${Sources[$i,DLFile]}" ]; then
+          mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
+        fi
+      fi
+      echo -ne "${Sources[$i,Package]} : "
+      if [ "${CHECKSUM_CHECKS}" = true ]; then
+        echo "${Sources[$i,DLSha256]}" "${Sources[$i,DLFinal]}" | sha256sum --check
+        if [ $? -ne 0 ]; then
+          echo "Checksum for ${Sources[$i,DLFinal]} did NOT match, aborting with return code $?"
+          exit 1;
+        fi
+      else
+        if [ ! -f "${Sources[$i,DLFinal]}" ]; then
+          echo "Not Found."
+          exit 1;
+        else
+          echo "Found."
+        fi
+      fi
     fi
   fi
-fi
-
-if [ "${PAGESPEED}" = true ]; then
-  if [ ! -f "${PAGESPEED_VERSION}.tar.gz" ]; then
-    wget "https://github.com/apache/incubator-pagespeed-ngx/archive/refs/tags/${PAGESPEED_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${PAGESPEED_SHA256} ${PAGESPEED_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for ${PAGESPEED_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-
-  if [ ! -f "${PSOL_VERSION}.tar.gz" ]; then
-    wget "https://dl.google.com/dl/page-speed/psol/${PSOL_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${PSOL_SHA256} ${PSOL_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for ${PSOL}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-fi
-
-if [ "${HEADERS_MORE}" = true ]; then
-  if [ ! -f "v${HEADERS_MORE_VERSION}.tar.gz" ]; then
-    wget "https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${HEADERS_MORE_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${HEADERS_MORE_SHA256} v${HEADERS_MORE_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for v${HEADERS_MORE_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-fi
-
-if [ "${CACHE_PURGE}" = true ]; then
-  if [ ! -f "${CACHE_PURGE_VERSION}.tar.gz" ]; then
-    wget "https://github.com/FRiCKLE/ngx_cache_purge/archive/refs/tags/${CACHE_PURGE_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${CACHE_PURGE_SHA256} ${CACHE_PURGE_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for ${CACHE_PURGE_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-fi
-
-if [ "${VTS}" = true ]; then
-  if [ ! -f "v${VTS_VERSION}.tar.gz" ]; then
-    wget "https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v${VTS_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${VTS_SHA256} v${VTS_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for v${VTS_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-fi
-
-if [ "${GEOIP2}" = true ]; then
-  if [ ! -f "${GEOIP2_VERSION}.tar.gz" ]; then
-    wget "https://github.com/leev/ngx_http_geoip2_module/archive/refs/tags/${GEOIP2_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${GEOIP2_SHA256} ${GEOIP2_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for ${GEOIP2_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-fi
-
-if [ "${ECHO}" = true ]; then
-  if [ ! -f "v${ECHO_VERSION}.tar.gz" ]; then
-    wget "https://github.com/openresty/echo-nginx-module/archive/refs/tags/v${ECHO_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${ECHO_SHA256} v${ECHO_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for v${ECHO_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-fi
-
-if [ "${MODSECURITY}" = true ]; then
-  if [ ! -f "modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz" ]; then
-    wget "https://github.com/SpiderLabs/ModSecurity-nginx/releases/download/v1.0.2/modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz"
-  fi
-  if [ "${CHECKSUM_CHECKS}" = true ]; then
-    echo ${MODSECURITY_SHA256} modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz | sha256sum --check
-    if [ $? -ne 0 ]; then
-      echo "Checksum for modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz did NOT match, aborting with return code $?"
-      exit 1;
-    fi
-  fi
-fi
-
-if [ "${BROTLI}" = true ]; then
-  if [ ! -d "ngx_brotli" ]; then
-    git clone --recursive ${BROTLI_GITHUB}
-    if [ $? -ne 0 ]; then
-      echo "Something went wrong while cloning brotli's git repo"
-      exit 1;
-    fi
-    echo "ngx_brotli cloned: OK"
-  else
-    cd ngx_brotli
-    git pull --recurse-submodules
-    if [ $? -ne 0 ]; then
-      echo "Something went wrong while updating from brotli's git repo"
-      exit 1;
-    fi
-    cd ..
-    echo "ngx_brotli update check: OK"
-  fi
-fi
+done
 
 cd ${WORKPWD}
 # exit 0;
@@ -228,7 +93,9 @@ tar -zxf ${WORKPWD}/src/nginx_${NGINX_VERSION}.orig.tar.gz
 cd nginx-${NGINX_VERSION}
 tar -xf ${WORKPWD}/src/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz
 cd debian
-sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules
+if [ "${USE_CUSTOM_PATCHES}" = true ]; then
+  sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules
+fi
 mkdir modules
 cd modules
 if [ "${LATEST_OPENSSL}" = true ]; then
@@ -238,41 +105,40 @@ if [ "${LATEST_OPENSSL}" = true ]; then
 fi
 cd ${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules
 if [ "${PAGESPEED}" = true ]; then
-  tar -zxf ${WORKPWD}/src/${PAGESPEED_VERSION}.tar.gz
+  tar -zxf ${WORKPWD}/src/pagespeed-${PAGESPEED_VERSION}.tar.gz
   mv incubator-pagespeed-ngx-${PAGESPEED_VERSION:1} ngx_pagespeed
   cd ngx_pagespeed
-  cp ${WORKPWD}/src/${PSOL_VERSION}.tar.gz .
-  tar -zxf ${WORKPWD}/src/${PSOL_VERSION}.tar.gz
+  tar -zxf ${WORKPWD}/src/psol-${PSOL_VERSION}.tar.gz
   cd ../..
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --add-module=\"\$(CURDIR)\/debian\/modules\/ngx_pagespeed\"/g" rules
 fi
 cd ${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules
 if [ "${HEADERS_MORE}" = true ]; then
-  tar -zxf ${WORKPWD}/src/v${HEADERS_MORE_VERSION}.tar.gz
+  tar -zxf ${WORKPWD}/src/headers-more-v${HEADERS_MORE_VERSION}.tar.gz
   cd ..
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --add-module=\"\$(CURDIR)\/debian\/modules\/headers-more-nginx-module-${HEADERS_MORE_VERSION}\"/g" rules
 fi
 cd ${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules
 if [ "${CACHE_PURGE}" = true ]; then
-  tar -zxf ${WORKPWD}/src/${CACHE_PURGE_VERSION}.tar.gz
+  tar -zxf ${WORKPWD}/src/cache-purge-${CACHE_PURGE_VERSION}.tar.gz
   cd ..
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --add-module=\"\$(CURDIR)\/debian\/modules\/ngx_cache_purge-${CACHE_PURGE_VERSION}\"/g" rules
 fi
 cd ${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules
 if [ "${VTS}" = true ]; then
-  tar -zxf ${WORKPWD}/src/v${VTS_VERSION}.tar.gz
+  tar -zxf ${WORKPWD}/src/vts-v${VTS_VERSION}.tar.gz
   cd ..
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --add-module=\"\$(CURDIR)\/debian\/modules\/nginx-module-vts-${VTS_VERSION}\"/g" rules
 fi
 cd ${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules
 if [ "${GEOIP2}" = true ]; then
-  tar -zxf ${WORKPWD}/src/${GEOIP2_VERSION}.tar.gz
+  tar -zxf ${WORKPWD}/src/geoip2-${GEOIP2_VERSION}.tar.gz
   cd ..
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --add-module=\"\$(CURDIR)\/debian\/modules\/ngx_http_geoip2_module-${GEOIP2_VERSION}\"/g" rules
 fi
 cd ${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules
 if [ "${ECHO}" = true ]; then
-  tar -zxf ${WORKPWD}/src/v${ECHO_VERSION}.tar.gz
+  tar -zxf ${WORKPWD}/src/echo-v${ECHO_VERSION}.tar.gz
   cd ..
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --add-module=\"\$(CURDIR)\/debian\/modules\/echo-nginx-module-${ECHO_VERSION}\"/g" rules
 fi
