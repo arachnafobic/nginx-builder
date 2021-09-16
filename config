@@ -1,16 +1,18 @@
 declare -A Sources
 
 # Distro info in all lowercase
-DISTRO_NAME=ubuntu
-DISTRO_CODENAME=focal
-DISTRO_VERSION=20.04
+# Be aware off the fact that nginx only supplies downloads for the "debian" folder for the latest distro releases when a new nginx version is released
+# So for example, nginx 1.21.3 only has these downloads for debian 10 (buster) and 11 (bullseye) or ubuntu 18 (bionic), 20 (focal) and 22 (hirsute)
+DISTRO_NAME=debian
+DISTRO_CODENAME=bullseye
+DISTRO_VERSION=11.0
 
-CHECKSUM_CHECKS=true
+CHECKSUM_CHECKS=false
 USE_CUSTOM_PATCHES=true
 USE_CUSTOM_CONFIGS=true
 
 # https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
-LATEST_OPENSSL=true
+LATEST_OPENSSL=false
 # https://www.modpagespeed.com/
 PAGESPEED=true
 # https://github.com/google/ngx_brotli
@@ -71,8 +73,8 @@ Sources[0,Package]="Nginx"
 Sources[0,Install]=true
 Sources[0,Version]="${NGINX_VERSION}"
 Sources[0,DLFile]="nginx_${NGINX_VERSION}.orig.tar.gz"
-Sources[0,DLUrl]="http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
-Sources[0,DLAltUrl]="https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[0,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[0,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
 Sources[0,DLSha256]="${NGINX_ORIG_SHA256}"
 Sources[0,DLFinal]="nginx_${NGINX_VERSION}.orig.tar.gz"
 Sources[0,Git]=false
@@ -84,8 +86,8 @@ Sources[1,Package]="Nginx Debian"
 Sources[1,Install]=true
 Sources[1,Version]="${NGINX_VERSION}"
 Sources[1,DLFile]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,DLUrl]="http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,DLAltUrl]="https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[1,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[1,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
 Sources[1,DLSha256]="${NGINX_DEB_SHA256}"
 Sources[1,DLFinal]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
 Sources[1,Git]=false
