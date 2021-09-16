@@ -2,3 +2,6 @@
 build/
 output/
 src/
+
+# Don't track content of these files
+*.swp
