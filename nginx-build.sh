@@ -91,7 +91,7 @@ cd build
 
 tar -zxf "${WORKPWD}/src/nginx_${NGINX_VERSION}.orig.tar.gz"
 cd "nginx-${NGINX_VERSION}"
-tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
+tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
 cd debian
 mkdir modules
 
@@ -166,7 +166,7 @@ else
   mkdir output
 fi
 
-docker build -t "docker-deb-builder:${DISTRO_VERSION}" -f "Dockerfile-ubuntu-${DISTRO_VERSION}" .
+docker build -t "docker-deb-builder:${DISTRO_VERSION}" -f "docker/Dockerfile-${DISTRO_NAME}-${DISTRO_VERSION}" .
 cd "${WORKPWD}"
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output "build/nginx-${NGINX_VERSION}"
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output -t "nginx-${NGINX_VERSION}" "build/nginx-${NGINX_VERSION}"

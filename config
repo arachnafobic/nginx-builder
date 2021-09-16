@@ -1,6 +1,8 @@
 declare -A Sources
 
-DISTRO_NAME=focal
+# Distro info in all lowercase
+DISTRO_NAME=ubuntu
+DISTRO_CODENAME=focal
 DISTRO_VERSION=20.04
 
 CHECKSUM_CHECKS=true
@@ -81,11 +83,11 @@ Sources[0,ConfigureSwitch]=""
 Sources[1,Package]="Nginx Debian"
 Sources[1,Install]=true
 Sources[1,Version]="${NGINX_VERSION}"
-Sources[1,DLFile]="nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
-Sources[1,DLUrl]="http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
-Sources[1,DLAltUrl]="https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
+Sources[1,DLFile]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[1,DLUrl]="http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[1,DLAltUrl]="https://nginx.org/packages/ubuntu/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
 Sources[1,DLSha256]="${NGINX_DEB_SHA256}"
-Sources[1,DLFinal]="nginx_${NGINX_VERSION}-1~${DISTRO_NAME}.debian.tar.xz"
+Sources[1,DLFinal]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
 Sources[1,Git]=false
 Sources[1,UnpackLoc]=""
 Sources[1,UnpackName]=""
