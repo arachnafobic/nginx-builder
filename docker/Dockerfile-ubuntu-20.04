@@ -15,6 +15,7 @@ RUN set -ex \
                uuid-dev \
                libmodsecurity3 \
                libmodsecurity-dev \
+               lsb-release \
     && apt-get build-dep -y --no-install-recommends \
                nginx \
     && apt-get clean \

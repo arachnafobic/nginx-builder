@@ -3,16 +3,27 @@ declare -A Sources
 # Distro info in all lowercase
 # Be aware off the fact that nginx only supplies downloads for the "debian" folder for the latest distro releases when a new nginx version is released
 # So for example, nginx 1.21.3 only has these downloads for debian 10 (buster) and 11 (bullseye) or ubuntu 18 (bionic), 20 (focal) and 22 (hirsute)
-DISTRO_NAME=debian
-DISTRO_CODENAME=bullseye
-DISTRO_VERSION=11.0
+#
+# For possible combos check the urls below for the right distribution :
+# http://nginx.org/packages/mainline/_DISTRO_NAME_/pool/nginx/    (versions not in the stable branch)
+# https://nginx.org/packages/_DISTRO_NAME_/pool/nginx/n/nginx/    (versions from the stable branch)
+#
+# Verified combos :
+#        distribution              nginx
+# debian - bullseye - 11.0  / 1.20.1-1 - 1.21.3-1
+# debian - buster   - 10.10 / 1.20.1-1 - 1.21.3-1
+# ubuntu - focal    - 20.04 / 1.20.1-1 - 1.21.3-1
+# ubuntu - bionic   - 18.04 / 1.20.1-1 - 1.21.3-1   (modsecurity only as dynamic module)
+DISTRO_NAME=ubuntu
+DISTRO_CODENAME=focal
+DISTRO_VERSION=20.04
 
-CHECKSUM_CHECKS=false
+CHECKSUM_CHECKS=true
 USE_CUSTOM_PATCHES=true
 USE_CUSTOM_CONFIGS=true
 
 # https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
-LATEST_OPENSSL=false
+LATEST_OPENSSL=true
 # https://www.modpagespeed.com/
 PAGESPEED=true
 # https://github.com/google/ngx_brotli
@@ -31,6 +42,7 @@ ECHO=true
 MODSECURITY=true
 
 NGINX_VERSION=1.21.3
+NGINX_SUBVERSION=1
 NGINX_ORIG_SHA256=14774aae0d151da350417efc4afda5cce5035056e71894836797e1f6e2d1175a
 NGINX_DEB_SHA256=2930f380bb93af1c3b54a60209922fc74241d6d1d20de4dd97f51e566773a718
 
@@ -38,9 +50,11 @@ OPENSSL_VERSION=1.1.1l
 OPENSSL_SHA256=0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1
 
 PAGESPEED_VERSION=v1.13.35.2-stable
+#PAGESPEED_VERSION=v1.14.33.1-RC1
 PAGESPEED_SHA256=68242a30308b21f13de9a36f2aea5c3e34e8a4c0b7c6a37d3369334f6f847d36
 
 PSOL_VERSION=1.13.35.2-x64
+#PSOL_VERSION=1.14.36.1
 PSOL_SHA256=df3ba3c8fc54e13845d0a1daa7a6e3d983126c23912851bbf8ba35be646a434f
 
 HEADERS_MORE_VERSION=0.33
@@ -86,10 +100,10 @@ Sources[1,Package]="Nginx Debian"
 Sources[1,Install]=true
 Sources[1,Version]="${NGINX_VERSION}"
 Sources[1,DLFile]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[1,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[1,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
 Sources[1,DLSha256]="${NGINX_DEB_SHA256}"
-Sources[1,DLFinal]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[1,DLFinal]="nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
 Sources[1,Git]=false
 Sources[1,UnpackLoc]=""
 Sources[1,UnpackName]=""
@@ -125,10 +139,13 @@ Sources[4,Package]="Pagespeed Psol"
 Sources[4,Install]="${PAGESPEED}"
 Sources[4,Version]="${PSOL_VERSION}"
 Sources[4,DLFile]="${PSOL_VERSION}.tar.gz"
+#Sources[4,DLFile]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
 Sources[4,DLUrl]="https://dl.google.com/dl/page-speed/psol/${PSOL_VERSION}.tar.gz"
+#Sources[4,DLUrl]="https://dist.apache.org/repos/dist/release/incubator/pagespeed/${PSOL_VERSION}/x64/psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
 Sources[4,DLAltUrl]=""
 Sources[4,DLSha256]="${PSOL_SHA256}"
 Sources[4,DLFinal]="psol-${PSOL_VERSION}.tar.gz"
+#Sources[4,DLFinal]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
 Sources[4,Git]=false
 Sources[4,UnpackLoc]="debian/modules/incubator-pagespeed-ngx-${PAGESPEED_VERSION:1}"
 Sources[4,UnpackName]="psol"
@@ -211,6 +228,7 @@ Sources[10,Git]=false
 Sources[10,UnpackLoc]="debian/modules"
 Sources[10,UnpackName]="modsecurity-nginx-v${MODSECURITY_VERSION}"
 Sources[10,ConfigureSwitch]="--add-module"
+#Sources[10,ConfigureSwitch]="--add-dynamic-module"
 
 Sources[11,Package]="Brotli"
 Sources[11,Install]="${BROTLI}"

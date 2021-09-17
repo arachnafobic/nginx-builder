@@ -3,7 +3,6 @@ FROM debian:11.0
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN set -ex \
-    && sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
                build-essential \
@@ -15,8 +14,8 @@ RUN set -ex \
                uuid-dev \
                libmodsecurity3 \
                libmodsecurity-dev \
-    && apt-get build-dep -y --no-install-recommends \
-               nginx \
+               libmaxminddb-dev \
+               lsb-release \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/* \
     && uname -a

@@ -91,7 +91,7 @@ cd build
 
 tar -zxf "${WORKPWD}/src/nginx_${NGINX_VERSION}.orig.tar.gz"
 cd "nginx-${NGINX_VERSION}"
-tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
 cd debian
 mkdir modules
 

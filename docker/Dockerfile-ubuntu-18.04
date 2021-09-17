@@ -13,8 +13,9 @@ RUN set -ex \
                fakeroot \
                dpkg-dev \
                uuid-dev \
-               libmodsecurity3 \
-               libmodsecurity-dev \
+               lsb-release \
+               git \
+               libgeoip-dev \
     && apt-get build-dep -y --no-install-recommends \
                nginx \
     && apt-get clean \
