@@ -10,6 +10,10 @@ if [ ! -f "./config" ]; then
 fi
 source ./config
 
+if [ "${BUILD_HTTP3}" = true ]; then
+  Sources[2,Install]=false
+  Sources[12,Install]=true
+fi
 
 # Fetch sources
 if [ ! -d "src" ]; then
@@ -17,7 +21,7 @@ if [ ! -d "src" ]; then
 fi
 cd src
 
-for i in {0..11}; do
+for i in {0..12}; do
   if [ "${Sources[$i,Install]}" = true ]; then
     if [ "${Sources[$i,Git]}" = true ]; then
       if [ ! -d "${Sources[$i,DLFinal]}" ]; then
@@ -94,8 +98,19 @@ cd "nginx-${NGINX_VERSION}"
 tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
 cd debian
 mkdir modules
+if [ "${BUILD_HTTP3}" = true ]; then
+  cd "${WORKPWD}/src"
+  if [ ! -d "nginx-quic" ]; then
+    hg clone -b quic "${NGINX_QUIC_HG}"
+  else
+    cd nginx-quic
+    hg update
+    cd ..
+  fi
+  rsync -r "${WORKPWD}/src/nginx-quic/" "${WORKPWD}/build/nginx-${NGINX_VERSION}"
+fi
 
-for i in {2..11}; do
+for i in {2..12}; do
   if [ "${Sources[$i,Install]}" = true ]; then
     cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/${Sources[$i,UnpackLoc]}"
     if [ "${Sources[$i,Git]}" = true ]; then
@@ -124,7 +139,11 @@ if [ "${USE_CUSTOM_PATCHES}" = true ]; then
     sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules
     patch -p0 < "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"
     cd ..
-    patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003.patch"
+    if [ "${BUILD_HTTP3}" = true ]; then
+      patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003_http3.patch"
+    else
+      patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003.patch"
+    fi
     patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_dynamic_tls_records_1015008.patch"
     touch .patchdone
     rm -f "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"

@@ -22,6 +22,10 @@ CHECKSUM_CHECKS=true
 USE_CUSTOM_PATCHES=true
 USE_CUSTOM_CONFIGS=true
 
+# Setting http3 to true will automaticly switch openssl with boringssl
+# and enable nginx-quic. These never have to manually be set to true below.
+BUILD_HTTP3=true
+
 # https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
 LATEST_OPENSSL=true
 # https://www.modpagespeed.com/
@@ -76,7 +80,8 @@ MODSECURITY_VERSION=1.0.2
 MODSECURITY_SHA256=41a6660c50508c60df59f8f09c444d18ef8112a4c118cdc791a3992390b78c32
 
 BROTLI_GITHUB=https://github.com/google/ngx_brotli
-
+BORINGSSL_GITHUB=https://github.com/google/boringssl
+NGINX_QUIC_HG=https://hg.nginx.org/nginx-quic
 
 ###
 # Edits below shouldn't be needed as long as urls don't change.
@@ -242,3 +247,16 @@ Sources[11,Git]=true
 Sources[11,UnpackLoc]="debian/modules"
 Sources[11,UnpackName]="ngx_brotli"
 Sources[11,ConfigureSwitch]="--add-module"
+
+Sources[12,Package]="BoringSSL"
+Sources[12,Install]=false
+Sources[12,Version]=""
+Sources[12,DLFile]="boringssl"
+Sources[12,DLUrl]="${BORINGSSL_GITHUB}"
+Sources[12,DLAltUrl]=""
+Sources[12,DLSha256]=""
+Sources[12,DLFinal]="boringssl"
+Sources[12,Git]=true
+Sources[12,UnpackLoc]="debian/modules"
+Sources[12,UnpackName]="boringssl"
+Sources[12,ConfigureSwitch]=""
