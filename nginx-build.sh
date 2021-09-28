@@ -125,6 +125,12 @@ for i in {2..12}; do
 
   fi
 done
+if [ "${BUILD_HTTP3}" = true ]; then
+  cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
+  sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v3_module --with-http_quic_module --with-stream_quic_module/g" rules
+  sed -i "s/CFLAGS=\"\"/CFLAGS=\"-Wno-ignored-qualifiers\"/g" rules
+  sed -i "s/--with-cc-opt=\"\$(CFLAGS)\" --with-ld-opt=\"\$(LDFLAGS)\"/--with-cc-opt=\"-I..\/modules\/boringssl\/include \$(CFLAGS)\" --with-ld-opt=\"-L..\/modules\/boringssl\/build\/ssl -L..\/modules\/boringssl\/build\/crypto \$(LDFLAGS)\"/g" rules
+fi
 
 cd "${WORKPWD}/build/nginx-${NGINX_VERSION}"
 if [ "${LATEST_OPENSSL}" = true ]; then
@@ -187,5 +193,8 @@ fi
 
 docker build -t "docker-deb-builder:${DISTRO_VERSION}" -f "docker/Dockerfile-${DISTRO_NAME}-${DISTRO_VERSION}" .
 cd "${WORKPWD}"
+export BUILD_HTTP3
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output "build/nginx-${NGINX_VERSION}"
-./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output -t "nginx-${NGINX_VERSION}" "build/nginx-${NGINX_VERSION}"
+
+# Test package
+# ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output -t "nginx-${NGINX_VERSION}" "build/nginx-${NGINX_VERSION}"
