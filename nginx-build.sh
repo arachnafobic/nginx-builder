@@ -134,7 +134,11 @@ fi
 
 cd "${WORKPWD}/build/nginx-${NGINX_VERSION}"
 if [ "${LATEST_OPENSSL}" = true ]; then
-  patch -p0 < "${WORKPWD}/custom/patches/openssl-compile.patch"
+  if [ "${OPENSSL_VERSION::1}" = "3" ]; then
+    patch -p0 < "${WORKPWD}/custom/patches/openssl-3.0.x-compile.patch"
+  else
+    patch -p0 < "${WORKPWD}/custom/patches/openssl-1.1.x-compile.patch"
+  fi
 fi
 if [ "${USE_CUSTOM_PATCHES}" = true ]; then
   if [ ! -f ".patchdone" ]; then
@@ -172,7 +176,10 @@ if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
   done
   sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" rules
   sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" nginx.rules.in
-
+  if [ "${BUILD_HTTP3}" = true ]; then
+    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" rules
+    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" nginx.rules.in
+  fi
   sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" rules
   sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" nginx.rules.in
   sed -i "/^\tln -s \/usr.*/i \\\tln -s \/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" rules

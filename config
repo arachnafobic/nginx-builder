@@ -18,13 +18,13 @@ DISTRO_NAME=ubuntu
 DISTRO_CODENAME=focal
 DISTRO_VERSION=20.04
 
-CHECKSUM_CHECKS=true
+CHECKSUM_CHECKS=false
 USE_CUSTOM_PATCHES=true
 USE_CUSTOM_CONFIGS=true
 
 # Setting http3 to true will automaticly switch openssl with boringssl
 # and enable nginx-quic. These never have to manually be set to true below.
-BUILD_HTTP3=true
+BUILD_HTTP3=false
 
 # https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
 LATEST_OPENSSL=true
@@ -51,6 +51,8 @@ NGINX_ORIG_SHA256=14774aae0d151da350417efc4afda5cce5035056e71894836797e1f6e2d117
 NGINX_DEB_SHA256=2930f380bb93af1c3b54a60209922fc74241d6d1d20de4dd97f51e566773a718
 
 OPENSSL_VERSION=1.1.1l
+# Openssl 3.0.0 is beeing worked on, but right now, it won't compile in this setup
+#OPENSSL_VERSION=3.0.0
 OPENSSL_SHA256=0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1
 
 PAGESPEED_VERSION=v1.13.35.2-stable
@@ -125,7 +127,7 @@ Sources[2,DLFinal]="openssl-${OPENSSL_VERSION}.tar.gz"
 Sources[2,Git]=false
 Sources[2,UnpackLoc]="debian/modules"
 Sources[2,UnpackName]="openssl-${OPENSSL_VERSION}"
-Sources[2,ConfigureSwitch]="--with-openssl"
+Sources[2,ConfigureSwitch]="--with-openssl-opt='enable-ec_nistp_64_gcc_128 enable-tls1_3 no-ssl3-method -march=native' --with-openssl"
 
 Sources[3,Package]="Pagespeed"
 Sources[3,Install]="${PAGESPEED}"
