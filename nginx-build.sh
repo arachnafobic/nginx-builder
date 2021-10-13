@@ -1,9 +1,8 @@
 #!/bin/bash
 
+##################################
 # Initialize
-WORKPWD="${PWD}"
-echo "Working in ${WORKPWD}"
-
+##################################
 if [ ! -f "./config" ]; then
   echo "config file not found."
   exit 1;
@@ -13,7 +12,79 @@ source ./config
 if [ "${BUILD_HTTP3}" = true ]; then
   Sources[2,Install]=false
   Sources[12,Install]=true
+  required_packages="curl tar jq docker.io git mercurial rsync"
+else
+  required_packages="curl tar jq docker.io git"
 fi
+
+# check if a command exist
+command_exists() {
+  command -v "$@" >/dev/null 2>&1
+}
+
+package_installed() {
+  dpkg -l | grep "ii  $@ " >/dev/null 2>&1
+}
+
+missing_packages=""
+# check if required packages are installed
+for package in $required_packages; do
+  if ! package_installed "${package}"; then
+    missing_packages="${missing_packages} ${package}"
+  fi
+done
+
+# Checking if lsb_release is installed
+if ! command_exists lsb_release; then
+    missing_packages="${missing_packages} lsb-release"
+fi
+
+# Report any missing packages
+if [ ! -z "${missing_packages}" ]; then
+  echo "Please install the following package(s) :${missing_packages}"
+  exit 0;
+fi
+
+##################################
+# Variables
+##################################
+WORKPWD="${PWD}"
+readonly OS_ARCH="$(uname -m)"
+
+# Colors
+CSI='\033['
+CRED="${CSI}1;31m"
+CGREEN="${CSI}1;32m"
+CEND="${CSI}0m"
+
+# clean previous install log
+echo "" >/tmp/nginx-builder.log
+
+##################################
+# Display Compilation Summary
+##################################
+
+echo ""
+echo -e "${CGREEN}##################################${CEND}"
+echo " Compilation summary "
+echo -e "${CGREEN}##################################${CEND}"
+echo ""
+echo " Targeted OS : ${DISTRO_NAME^} ${DISTRO_VERSION}"
+echo " Detected Arch : ${OS_ARCH}"
+echo ""
+echo -e "  - Nginx release : ${NGINX_VERSION}-${NGINX_SUBVERSION}"
+if [ "${LATEST_OPENSSL}" = true ]; then
+  echo -e "  - OPENSSL : ${OPENSSL_VERSION}"
+else
+  echo -e "  - OPENSSL : Distro Default"
+fi
+#  -n "$LIBRESSL_VALID"
+#    echo -e "  - LIBRESSL : $LIBRESSL_VALID"
+# echo "  - Dynamic modules $DYNAMIC_MODULES_VALID"
+# echo "  - Pagespeed : $PAGESPEED_VALID"
+# echo "  - Naxsi : $NAXSI_VALID"
+# echo "  - RTMP : $RTMP_VALID"
+echo ""
 
 # Fetch sources
 if [ ! -d "src" ]; then
@@ -81,7 +152,7 @@ for i in {0..12}; do
   fi
 done
 cd "${WORKPWD}"
-# exit 0;
+exit 0;
 
 
 # Setup build directory
