@@ -57,6 +57,53 @@ CRED="${CSI}1;31m"
 CGREEN="${CSI}1;32m"
 CEND="${CSI}0m"
 
+# Module report
+modules_static=""
+modules_dynamic=""
+modules_disabled=""
+compile_pagespeed="No"
+compile_naxsi="No"
+compile_rtmp="No"
+for (( i = 0; i <= $package_counter; i++ ))
+do
+  if [ "${Sources[$i,Install]}" = true ]; then
+    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-module" ]; then
+      modules_static="${modules_static} ${Sources[$i,Package]},"
+    fi
+    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]; then
+      modules_dynamic="${modules_dynamic} ${Sources[$i,Package]},"
+    fi
+    if [ "${Sources[$i,Package]}" == "Pagespeed" ]; then
+      compile_pagespeed="Yes"
+    fi
+    if [ "${Sources[$i,Package]}" == "Naxsi" ]; then
+      compile_naxsi="Yes"
+    fi
+    if [ "${Sources[$i,Package]}" == "RTMP" ]; then
+      compile_rtmp="Yes"
+    fi
+  else
+    if [[ "${Sources[$i,ConfigureSwitch]}" == "--add-module" || "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]]; then
+      modules_disabled="${modules_disabled} ${Sources[$i,Package]},"
+    fi
+  fi
+done
+if [ -z "${modules_static}" ]; then
+  modules_static=" None"
+else
+  modules_static="${modules_static::-1}"
+fi
+if [ -z "${modules_dynamic}" ]; then
+  modules_dynamic=" None"
+else
+  modules_dynamic="${modules_dynamic::-1}"
+fi
+if [ -z "${modules_disabled}" ]; then
+  modules_disabled=" None"
+else
+  modules_disabled="${modules_dynamic::-1}"
+fi
+
 # clean previous install log
 echo "" >/tmp/nginx-builder.log
 
@@ -78,12 +125,16 @@ if [ "${LATEST_OPENSSL}" = true ]; then
 else
   echo -e "  - OPENSSL : Distro Default"
 fi
+echo "  - Static modules :${modules_static}"
+echo "  - Dynamic modules :${modules_dynamic}"
+echo "  - Disabled modules :${modules_dynamic}"
+echo "  - Pagespeed : ${compile_pagespeed}"
+echo "  - Naxsi : ${compile_naxsi}"
+echo "  - RTMP : ${compile_rtmp}"
+
+
 #  -n "$LIBRESSL_VALID"
 #    echo -e "  - LIBRESSL : $LIBRESSL_VALID"
-# echo "  - Dynamic modules $DYNAMIC_MODULES_VALID"
-# echo "  - Pagespeed : $PAGESPEED_VALID"
-# echo "  - Naxsi : $NAXSI_VALID"
-# echo "  - RTMP : $RTMP_VALID"
 echo ""
 
 # Fetch sources
@@ -92,7 +143,8 @@ if [ ! -d "src" ]; then
 fi
 cd src
 
-for i in {0..12}; do
+for (( i = 0; i <= $package_counter; i++ ))
+do
   if [ "${Sources[$i,Install]}" = true ]; then
     if [ "${Sources[$i,Git]}" = true ]; then
       if [ ! -d "${Sources[$i,DLFinal]}" ]; then
@@ -181,7 +233,8 @@ if [ "${BUILD_HTTP3}" = true ]; then
   rsync -r "${WORKPWD}/src/nginx-quic/" "${WORKPWD}/build/nginx-${NGINX_VERSION}"
 fi
 
-for i in {2..12}; do
+for (( i = 2; i <= $package_counter; i++ ))
+do
   if [ "${Sources[$i,Install]}" = true ]; then
     cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/${Sources[$i,UnpackLoc]}"
     if [ "${Sources[$i,Git]}" = true ]; then

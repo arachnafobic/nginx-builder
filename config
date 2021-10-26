@@ -1,4 +1,5 @@
 declare -A Sources
+declare -i package_counter
 
 # Distro info in all lowercase
 # Be aware off the fact that nginx only supplies downloads for the "debian" folder for the latest distro releases when a new nginx version is released
@@ -44,6 +45,10 @@ GEOIP2=true
 ECHO=true
 # https://github.com/SpiderLabs/ModSecurity-nginx
 MODSECURITY=true
+# https://github.com/nbs-system/naxsi
+NAXSI=true
+# https://github.com/arut/nginx-rtmp-module
+RTMP=false
 
 NGINX_VERSION=1.21.3
 NGINX_SUBVERSION=1
@@ -81,6 +86,12 @@ ECHO_SHA256=86f6866baf7297d85feb42ff6d9c212d1de696f3314a53d3a41a4b533a67ab01
 MODSECURITY_VERSION=1.0.2
 MODSECURITY_SHA256=41a6660c50508c60df59f8f09c444d18ef8112a4c118cdc791a3992390b78c32
 
+NAXSI_VERSION=1.3
+NAXSI_SHA256=439c8677372d2597b4360bbcc10bc86490de1fc75695b193ad5df154a214d628
+
+RTMP_VERSION=1.2.2
+RTMP_SHA256=07f19b7bffec5e357bb8820c63e5281debd45f5a2e6d46b1636d9202c3e09d78
+
 BROTLI_GITHUB=https://github.com/google/ngx_brotli
 BORINGSSL_GITHUB=https://github.com/google/boringssl
 NGINX_QUIC_HG=https://hg.nginx.org/nginx-quic
@@ -90,175 +101,220 @@ NGINX_QUIC_HG=https://hg.nginx.org/nginx-quic
 ###
 confs=("mailgun-tracking.conf" "fpm-wordpress-sub-cache-users.conf" "fpm-wordpress-sub-cache.conf" "fpm-wordpress-sub-users.conf" "fpm-wordpress-sub.conf" "fpm-wordpress-mu-cache.conf" "fpm-wordpress-mu-cache-users.conf" "fpm-wordpress-cache-users.conf" "fpm-wordpress-mu-users.conf" "restrictions-users.conf" "fpm-sendy-users.conf" "fpm-sendy.conf" "fpm-wordpress-users.conf" "fpm-laravel-users.conf" "fpm-default-users.conf" "blacklist.conf" "fpm-drupal.conf" "fpm-opencart.conf" "fpm-prestashop.conf" "pagespeed.conf" "cloudflare.conf" "ssl.global.conf" "admin-ips.conf" "restrictions.conf" "fpm-laravel.conf" "fpm-wordpress-mu.conf" "fpm-wordpress.conf" "fpm-wordpress-cache.conf" "fpm-default.conf")
 
-Sources[0,Package]="Nginx"
-Sources[0,Install]=true
-Sources[0,Version]="${NGINX_VERSION}"
-Sources[0,DLFile]="nginx_${NGINX_VERSION}.orig.tar.gz"
-Sources[0,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
-Sources[0,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
-Sources[0,DLSha256]="${NGINX_ORIG_SHA256}"
-Sources[0,DLFinal]="nginx_${NGINX_VERSION}.orig.tar.gz"
-Sources[0,Git]=false
-Sources[0,UnpackLoc]=""
-Sources[0,UnpackName]=""
-Sources[0,ConfigureSwitch]=""
+package_counter=0
 
-Sources[1,Package]="Nginx Debian"
-Sources[1,Install]=true
-Sources[1,Version]="${NGINX_VERSION}"
-Sources[1,DLFile]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,DLSha256]="${NGINX_DEB_SHA256}"
-Sources[1,DLFinal]="nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
-Sources[1,Git]=false
-Sources[1,UnpackLoc]=""
-Sources[1,UnpackName]=""
-Sources[1,ConfigureSwitch]=""
+Sources[$package_counter,Package]="Nginx"
+Sources[$package_counter,Install]=true
+Sources[$package_counter,Version]="${NGINX_VERSION}"
+Sources[$package_counter,DLFile]="nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[$package_counter,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[$package_counter,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[$package_counter,DLSha256]="${NGINX_ORIG_SHA256}"
+Sources[$package_counter,DLFinal]="nginx_${NGINX_VERSION}.orig.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]=""
+Sources[$package_counter,UnpackName]=""
+Sources[$package_counter,ConfigureSwitch]=""
+let "package_counter++"
 
-Sources[2,Package]="OpenSSL"
-Sources[2,Install]="${LATEST_OPENSSL}"
-Sources[2,Version]="${OPENSSL_VERSION}"
-Sources[2,DLFile]="openssl-${OPENSSL_VERSION}.tar.gz"
-Sources[2,DLUrl]="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
-Sources[2,DLAltUrl]=""
-Sources[2,DLSha256]="${OPENSSL_SHA256}"
-Sources[2,DLFinal]="openssl-${OPENSSL_VERSION}.tar.gz"
-Sources[2,Git]=false
-Sources[2,UnpackLoc]="debian/modules"
-Sources[2,UnpackName]="openssl-${OPENSSL_VERSION}"
-Sources[2,ConfigureSwitch]="--with-openssl-opt='enable-ec_nistp_64_gcc_128 enable-tls1_3 no-ssl3-method -march=native' --with-openssl"
+Sources[$package_counter,Package]="Nginx Debian"
+Sources[$package_counter,Install]=true
+Sources[$package_counter,Version]="${NGINX_VERSION}"
+Sources[$package_counter,DLFile]="nginx_${NGINX_VERSION}-1~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[$package_counter,DLUrl]="http://nginx.org/packages/mainline/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[$package_counter,DLAltUrl]="https://nginx.org/packages/${DISTRO_NAME}/pool/nginx/n/nginx/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[$package_counter,DLSha256]="${NGINX_DEB_SHA256}"
+Sources[$package_counter,DLFinal]="nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]=""
+Sources[$package_counter,UnpackName]=""
+Sources[$package_counter,ConfigureSwitch]=""
+let "package_counter++"
 
-Sources[3,Package]="Pagespeed"
-Sources[3,Install]="${PAGESPEED}"
-Sources[3,Version]="${PAGESPEED_VERSION}"
-Sources[3,DLFile]="${PAGESPEED_VERSION}.tar.gz"
-Sources[3,DLUrl]="https://github.com/apache/incubator-pagespeed-ngx/archive/refs/tags/${PAGESPEED_VERSION}.tar.gz"
-Sources[3,DLAltUrl]=""
-Sources[3,DLSha256]="${PAGESPEED_SHA256}"
-Sources[3,DLFinal]="pagespeed-${PAGESPEED_VERSION}.tar.gz"
-Sources[3,Git]=false
-Sources[3,UnpackLoc]="debian/modules"
-Sources[3,UnpackName]="incubator-pagespeed-ngx-${PAGESPEED_VERSION:1}"
-Sources[3,ConfigureSwitch]="--add-module"
+Sources[$package_counter,Package]="OpenSSL"
+Sources[$package_counter,Install]="${LATEST_OPENSSL}"
+Sources[$package_counter,Version]="${OPENSSL_VERSION}"
+Sources[$package_counter,DLFile]="openssl-${OPENSSL_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${OPENSSL_SHA256}"
+Sources[$package_counter,DLFinal]="openssl-${OPENSSL_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="openssl-${OPENSSL_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--with-openssl-opt='enable-ec_nistp_64_gcc_128 enable-tls1_3 no-ssl3-method -march=native' --with-openssl"
+let "package_counter++"
 
-Sources[4,Package]="Pagespeed Psol"
-Sources[4,Install]="${PAGESPEED}"
-Sources[4,Version]="${PSOL_VERSION}"
-Sources[4,DLFile]="${PSOL_VERSION}.tar.gz"
-#Sources[4,DLFile]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
-Sources[4,DLUrl]="https://dl.google.com/dl/page-speed/psol/${PSOL_VERSION}.tar.gz"
-#Sources[4,DLUrl]="https://dist.apache.org/repos/dist/release/incubator/pagespeed/${PSOL_VERSION}/x64/psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
-Sources[4,DLAltUrl]=""
-Sources[4,DLSha256]="${PSOL_SHA256}"
-Sources[4,DLFinal]="psol-${PSOL_VERSION}.tar.gz"
-#Sources[4,DLFinal]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
-Sources[4,Git]=false
-Sources[4,UnpackLoc]="debian/modules/incubator-pagespeed-ngx-${PAGESPEED_VERSION:1}"
-Sources[4,UnpackName]="psol"
-Sources[4,ConfigureSwitch]=""
+Sources[$package_counter,Package]="Pagespeed"
+Sources[$package_counter,Install]="${PAGESPEED}"
+Sources[$package_counter,Version]="${PAGESPEED_VERSION}"
+Sources[$package_counter,DLFile]="${PAGESPEED_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/apache/incubator-pagespeed-ngx/archive/refs/tags/${PAGESPEED_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${PAGESPEED_SHA256}"
+Sources[$package_counter,DLFinal]="pagespeed-${PAGESPEED_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="incubator-pagespeed-ngx-${PAGESPEED_VERSION:1}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+let "package_counter++"
 
-Sources[5,Package]="Headers More"
-Sources[5,Install]="${HEADERS_MORE}"
-Sources[5,Version]="${HEADERS_MORE_VERSION}"
-Sources[5,DLFile]="v${HEADERS_MORE_VERSION}.tar.gz"
-Sources[5,DLUrl]="https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${HEADERS_MORE_VERSION}.tar.gz"
-Sources[5,DLAltUrl]=""
-Sources[5,DLSha256]="${HEADERS_MORE_SHA256}"
-Sources[5,DLFinal]="headers-more-v${HEADERS_MORE_VERSION}.tar.gz"
-Sources[5,Git]=false
-Sources[5,UnpackLoc]="debian/modules"
-Sources[5,UnpackName]="headers-more-nginx-module-${HEADERS_MORE_VERSION}"
-Sources[5,ConfigureSwitch]="--add-module"
+Sources[$package_counter,Package]="Pagespeed Psol"
+Sources[$package_counter,Install]="${PAGESPEED}"
+Sources[$package_counter,Version]="${PSOL_VERSION}"
+Sources[$package_counter,DLFile]="${PSOL_VERSION}.tar.gz"
+#Sources[$package_counter,DLFile]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
+Sources[$package_counter,DLUrl]="https://dl.google.com/dl/page-speed/psol/${PSOL_VERSION}.tar.gz"
+#Sources[$package_counter,DLUrl]="https://dist.apache.org/repos/dist/release/incubator/pagespeed/${PSOL_VERSION}/x64/psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${PSOL_SHA256}"
+Sources[$package_counter,DLFinal]="psol-${PSOL_VERSION}.tar.gz"
+#Sources[$package_counter,DLFinal]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules/incubator-pagespeed-ngx-${PAGESPEED_VERSION:1}"
+Sources[$package_counter,UnpackName]="psol"
+Sources[$package_counter,ConfigureSwitch]=""
+let "package_counter++"
 
-Sources[6,Package]="Cache Purge"
-Sources[6,Install]="${CACHE_PURGE}"
-Sources[6,Version]="${CACHE_PURGE_VERSION}"
-Sources[6,DLFile]="${CACHE_PURGE_VERSION}.tar.gz"
-Sources[6,DLUrl]="https://github.com/FRiCKLE/ngx_cache_purge/archive/refs/tags/${CACHE_PURGE_VERSION}.tar.gz"
-Sources[6,DLAltUrl]=""
-Sources[6,DLSha256]="${CACHE_PURGE_SHA256}"
-Sources[6,DLFinal]="cache-purge-${CACHE_PURGE_VERSION}.tar.gz"
-Sources[6,Git]=false
-Sources[6,UnpackLoc]="debian/modules"
-Sources[6,UnpackName]="ngx_cache_purge-${CACHE_PURGE_VERSION}"
-Sources[6,ConfigureSwitch]="--add-module"
+Sources[$package_counter,Package]="Headers More"
+Sources[$package_counter,Install]="${HEADERS_MORE}"
+Sources[$package_counter,Version]="${HEADERS_MORE_VERSION}"
+Sources[$package_counter,DLFile]="v${HEADERS_MORE_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${HEADERS_MORE_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${HEADERS_MORE_SHA256}"
+Sources[$package_counter,DLFinal]="headers-more-v${HEADERS_MORE_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="headers-more-nginx-module-${HEADERS_MORE_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+let "package_counter++"
 
-Sources[7,Package]="Virtual host traffic status"
-Sources[7,Install]="${VTS}"
-Sources[7,Version]="${VTS_VERSION}"
-Sources[7,DLFile]="v${VTS_VERSION}.tar.gz"
-Sources[7,DLUrl]="https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v${VTS_VERSION}.tar.gz"
-Sources[7,DLAltUrl]=""
-Sources[7,DLSha256]="${VTS_SHA256}"
-Sources[7,DLFinal]="vts-v${VTS_VERSION}.tar.gz"
-Sources[7,Git]=false
-Sources[7,UnpackLoc]="debian/modules"
-Sources[7,UnpackName]="nginx-module-vts-${VTS_VERSION}"
-Sources[7,ConfigureSwitch]="--add-module"
+Sources[$package_counter,Package]="Cache Purge"
+Sources[$package_counter,Install]="${CACHE_PURGE}"
+Sources[$package_counter,Version]="${CACHE_PURGE_VERSION}"
+Sources[$package_counter,DLFile]="${CACHE_PURGE_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/FRiCKLE/ngx_cache_purge/archive/refs/tags/${CACHE_PURGE_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${CACHE_PURGE_SHA256}"
+Sources[$package_counter,DLFinal]="cache-purge-${CACHE_PURGE_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="ngx_cache_purge-${CACHE_PURGE_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+let "package_counter++"
 
-Sources[8,Package]="GeoIP2"
-Sources[8,Install]="${GEOIP2}"
-Sources[8,Version]="${GEOIP2_VERSION}"
-Sources[8,DLFile]="${GEOIP2_VERSION}.tar.gz"
-Sources[8,DLUrl]="https://github.com/leev/ngx_http_geoip2_module/archive/refs/tags/${GEOIP2_VERSION}.tar.gz"
-Sources[8,DLAltUrl]=""
-Sources[8,DLSha256]="${GEOIP2_SHA256}"
-Sources[8,DLFinal]="geoip2-${GEOIP2_VERSION}.tar.gz"
-Sources[8,Git]=false
-Sources[8,UnpackLoc]="debian/modules"
-Sources[8,UnpackName]="ngx_http_geoip2_module-${GEOIP2_VERSION}"
-Sources[8,ConfigureSwitch]="--add-module"
+Sources[$package_counter,Package]="Virtual host traffic status"
+Sources[$package_counter,Install]="${VTS}"
+Sources[$package_counter,Version]="${VTS_VERSION}"
+Sources[$package_counter,DLFile]="v${VTS_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v${VTS_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${VTS_SHA256}"
+Sources[$package_counter,DLFinal]="vts-v${VTS_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="nginx-module-vts-${VTS_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+let "package_counter++"
 
-Sources[9,Package]="Echo"
-Sources[9,Install]="${ECHO}"
-Sources[9,Version]=${ECHO_VERSION}
-Sources[9,DLFile]="v${ECHO_VERSION}.tar.gz"
-Sources[9,DLUrl]="https://github.com/openresty/echo-nginx-module/archive/refs/tags/v${ECHO_VERSION}.tar.gz"
-Sources[9,DLAltUrl]=""
-Sources[9,DLSha256]="${ECHO_SHA256}"
-Sources[9,DLFinal]="echo-v${ECHO_VERSION}.tar.gz"
-Sources[9,Git]=false
-Sources[9,UnpackLoc]="debian/modules"
-Sources[9,UnpackName]="echo-nginx-module-${ECHO_VERSION}"
-Sources[9,ConfigureSwitch]="--add-module"
+Sources[$package_counter,Package]="GeoIP2"
+Sources[$package_counter,Install]="${GEOIP2}"
+Sources[$package_counter,Version]="${GEOIP2_VERSION}"
+Sources[$package_counter,DLFile]="${GEOIP2_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/leev/ngx_http_geoip2_module/archive/refs/tags/${GEOIP2_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${GEOIP2_SHA256}"
+Sources[$package_counter,DLFinal]="geoip2-${GEOIP2_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="ngx_http_geoip2_module-${GEOIP2_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+let "package_counter++"
 
-Sources[10,Package]="Mod Security"
-Sources[10,Install]="${MODSECURITY}"
-Sources[10,Version]="${MODSECURITY_VERSION}"
-Sources[10,DLFile]="modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz"
-Sources[10,DLUrl]="https://github.com/SpiderLabs/ModSecurity-nginx/releases/download/v1.0.2/modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz"
-Sources[10,DLAltUrl]=""
-Sources[10,DLSha256]="${MODSECURITY_SHA256}"
-Sources[10,DLFinal]="modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz"
-Sources[10,Git]=false
-Sources[10,UnpackLoc]="debian/modules"
-Sources[10,UnpackName]="modsecurity-nginx-v${MODSECURITY_VERSION}"
-Sources[10,ConfigureSwitch]="--add-module"
-#Sources[10,ConfigureSwitch]="--add-dynamic-module"
+Sources[$package_counter,Package]="Echo"
+Sources[$package_counter,Install]="${ECHO}"
+Sources[$package_counter,Version]=${ECHO_VERSION}
+Sources[$package_counter,DLFile]="v${ECHO_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/openresty/echo-nginx-module/archive/refs/tags/v${ECHO_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${ECHO_SHA256}"
+Sources[$package_counter,DLFinal]="echo-v${ECHO_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="echo-nginx-module-${ECHO_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+let "package_counter++"
 
-Sources[11,Package]="Brotli"
-Sources[11,Install]="${BROTLI}"
-Sources[11,Version]=""
-Sources[11,DLFile]="ngx_brotli"
-Sources[11,DLUrl]="${BROTLI_GITHUB}"
-Sources[11,DLAltUrl]=""
-Sources[11,DLSha256]=""
-Sources[11,DLFinal]="ngx_brotli"
-Sources[11,Git]=true
-Sources[11,UnpackLoc]="debian/modules"
-Sources[11,UnpackName]="ngx_brotli"
-Sources[11,ConfigureSwitch]="--add-module"
+Sources[$package_counter,Package]="Mod Security"
+Sources[$package_counter,Install]="${MODSECURITY}"
+Sources[$package_counter,Version]="${MODSECURITY_VERSION}"
+Sources[$package_counter,DLFile]="modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/SpiderLabs/ModSecurity-nginx/releases/download/v1.0.2/modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${MODSECURITY_SHA256}"
+Sources[$package_counter,DLFinal]="modsecurity-nginx-v${MODSECURITY_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="modsecurity-nginx-v${MODSECURITY_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+#Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+let "package_counter++"
 
-Sources[12,Package]="BoringSSL"
-Sources[12,Install]=false
-Sources[12,Version]=""
-Sources[12,DLFile]="boringssl"
-Sources[12,DLUrl]="${BORINGSSL_GITHUB}"
-Sources[12,DLAltUrl]=""
-Sources[12,DLSha256]=""
-Sources[12,DLFinal]="boringssl"
-Sources[12,Git]=true
-Sources[12,UnpackLoc]="debian/modules"
-Sources[12,UnpackName]="boringssl"
-Sources[12,ConfigureSwitch]=""
+Sources[$package_counter,Package]="Naxsi"
+Sources[$package_counter,Install]="${NAXSI}"
+Sources[$package_counter,Version]="${NAXSI_VERSION}"
+Sources[$package_counter,DLFile]="${NAXSI_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/nbs-system/naxsi/archive/refs/tags/${NAXSI_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${NAXSI_SHA256}"
+Sources[$package_counter,DLFinal]="naxsi-${NAXSI_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="naxsi-${NAXSI_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+#Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+let "package_counter++"
+
+Sources[$package_counter,Package]="RTMP"
+Sources[$package_counter,Install]="${RTMP}"
+Sources[$package_counter,Version]="${RTMP_VERSION}"
+Sources[$package_counter,DLFile]="v${RTMP_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v${RTMP_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${RTMP_SHA256}"
+Sources[$package_counter,DLFinal]="rtmp-v${RTMP_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="nginx-rtmp-module-${RTMP_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+#Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+let "package_counter++"
+
+Sources[$package_counter,Package]="Brotli"
+Sources[$package_counter,Install]="${BROTLI}"
+Sources[$package_counter,Version]=""
+Sources[$package_counter,DLFile]="ngx_brotli"
+Sources[$package_counter,DLUrl]="${BROTLI_GITHUB}"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]=""
+Sources[$package_counter,DLFinal]="ngx_brotli"
+Sources[$package_counter,Git]=true
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="ngx_brotli"
+Sources[$package_counter,ConfigureSwitch]="--add-module"
+let "package_counter++"
+
+Sources[$package_counter,Package]="BoringSSL"
+Sources[$package_counter,Install]=false
+Sources[$package_counter,Version]=""
+Sources[$package_counter,DLFile]="boringssl"
+Sources[$package_counter,DLUrl]="${BORINGSSL_GITHUB}"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]=""
+Sources[$package_counter,DLFinal]="boringssl"
+Sources[$package_counter,Git]=true
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="boringssl"
+Sources[$package_counter,ConfigureSwitch]=""
+let "package_counter++"
