@@ -26,6 +26,14 @@ package_installed() {
   dpkg -l | grep "ii  $@ " >/dev/null 2>&1
 }
 
+fail() {
+  echo -ne "[${CRED}FAIL${CEND}]\n\n"
+  echo "$1"
+  echo "See $output_log for possibly more info."
+  echo ""
+  exit 1;
+}
+
 missing_packages=""
 # check if required packages are installed
 for package in $required_packages; do
@@ -105,7 +113,7 @@ else
 fi
 
 # clean previous install log
-echo "" >/tmp/nginx-builder.log
+echo "" >$output_log
 
 ##################################
 # Display Compilation Summary
@@ -116,8 +124,9 @@ echo -e "${CGREEN}##################################${CEND}"
 echo " Compilation summary "
 echo -e "${CGREEN}##################################${CEND}"
 echo ""
-echo " Targeted OS : ${DISTRO_NAME^} ${DISTRO_VERSION}"
+echo " Targeted OS   : ${DISTRO_NAME^} ${DISTRO_VERSION}"
 echo " Detected Arch : ${OS_ARCH}"
+echo " Logging in    : ${output_log}"
 echo ""
 echo -e "  - Nginx release : ${NGINX_VERSION}-${NGINX_SUBVERSION}"
 if [ "${LATEST_OPENSSL}" = true ]; then
@@ -131,13 +140,12 @@ echo "  - Disabled modules :${modules_dynamic}"
 echo "  - Pagespeed : ${compile_pagespeed}"
 echo "  - Naxsi : ${compile_naxsi}"
 echo "  - RTMP : ${compile_rtmp}"
-
-
 #  -n "$LIBRESSL_VALID"
 #    echo -e "  - LIBRESSL : $LIBRESSL_VALID"
 echo ""
 
 # Fetch sources
+echo -ne "       Downloading Modules                    "
 if [ ! -d "src" ]; then
   mkdir src
 fi
@@ -148,35 +156,33 @@ do
   if [ "${Sources[$i,Install]}" = true ]; then
     if [ "${Sources[$i,Git]}" = true ]; then
       if [ ! -d "${Sources[$i,DLFinal]}" ]; then
-        git clone --recursive "${Sources[$i,DLUrl]}"
+        git clone --recursive "${Sources[$i,DLUrl]}" >>$output_log 2>&1
         if [ $? -ne 0 ]; then
-          echo "Something went wrong while cloning git repo for ${Sources[$i,Package]}"
-          exit 1;
+          fail "Something went wrong while cloning git repo for ${Sources[$i,Package]}"
         fi
         if [ "${Sources[$i,DLFile]}" != "${Sources[$i,DLFinal]}" ]; then
           if [ -d "${Sources[$i,DLFile]}" ]; then
             mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
           fi
         fi
-        echo "${Sources[$i,Package]} cloned: OK"
+        echo "${Sources[$i,Package]} cloned: OK" >>$output_log 2>&1
       else
         cd "${Sources[$i,DLFinal]}"
-        git pull --recurse-submodules
+        git pull --recurse-submodules >>$output_log 2>&1
         if [ $? -ne 0 ]; then
-          echo "Something went wrong while updating git repo for ${Sources[$i,Package]}"
-          exit 1;
+          fail "Something went wrong while updating git repo for ${Sources[$i,Package]}"
         fi
         cd ..
-        echo "${Sources[$i,Package]} up2date: OK"
+        echo "${Sources[$i,Package]} up2date: OK" >>$output_log 2>&1
       fi
     else
       if [ ! -f "${Sources[$i,DLFinal]}" ]; then
-        wget "${Sources[$i,DLUrl]}"
+        wget "${Sources[$i,DLUrl]}" >>$output_log 2>&1
         if [ $? -ne 0 ]; then
           if [ ! -z "${Sources[$i,DLAltUrl]}" ]; then
-            wget "${Sources[$i,DLAltUrl]}"
+            wget "${Sources[$i,DLAltUrl]}" >>$output_log 2>&1
           else
-            echo "Downloading ${Sources[$i,Install]} failed, no alternative url supplied."
+            fail "Downloading ${Sources[$i,Package]} failed, no alternative url supplied."
           fi
         fi
       fi
@@ -185,29 +191,28 @@ do
           mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
         fi
       fi
-      echo -ne "${Sources[$i,Package]} : "
       if [ "${CHECKSUM_CHECKS}" = true ]; then
         echo "${Sources[$i,DLSha256]}" "${Sources[$i,DLFinal]}" | sha256sum --check
         if [ $? -ne 0 ]; then
-          echo "Checksum for ${Sources[$i,DLFinal]} did NOT match, aborting with return code $?"
-          exit 1;
+          fail "Checksum for ${Sources[$i,DLFinal]} did NOT match, aborting with return code $?"
         fi
       else
         if [ ! -f "${Sources[$i,DLFinal]}" ]; then
-          echo "Not Found."
-          exit 1;
+          fail "${Sources[$i,DLFinal]} was not found."
         else
-          echo "Found."
+          echo "${Sources[$i,Package]} : Found." >>$output_log 2>&1
         fi
       fi
     fi
   fi
 done
 cd "${WORKPWD}"
-exit 0;
+echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+# exit 0;
 
 
 # Setup build directory
+echo -ne "       Setup Build folder                     "
 if [ ! -d "build" ]; then
   mkdir build
 else
@@ -216,21 +221,21 @@ else
 fi
 cd build
 
-tar -zxf "${WORKPWD}/src/nginx_${NGINX_VERSION}.orig.tar.gz"
+tar -zxf "${WORKPWD}/src/nginx_${NGINX_VERSION}.orig.tar.gz" >>$output_log 2>&1
 cd "nginx-${NGINX_VERSION}"
-tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz"
+tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz" >>$output_log 2>&1
 cd debian
 mkdir modules
 if [ "${BUILD_HTTP3}" = true ]; then
   cd "${WORKPWD}/src"
   if [ ! -d "nginx-quic" ]; then
-    hg clone -b quic "${NGINX_QUIC_HG}"
+    hg clone -b quic "${NGINX_QUIC_HG}" >>$output_log 2>&1
   else
     cd nginx-quic
-    hg update
+    hg update >>$output_log 2>&1
     cd ..
   fi
-  rsync -r "${WORKPWD}/src/nginx-quic/" "${WORKPWD}/build/nginx-${NGINX_VERSION}"
+  rsync -r "${WORKPWD}/src/nginx-quic/" "${WORKPWD}/build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
 fi
 
 for (( i = 2; i <= $package_counter; i++ ))
@@ -240,77 +245,87 @@ do
     if [ "${Sources[$i,Git]}" = true ]; then
       cp -R "${WORKPWD}/src/${Sources[$i,DLFinal]}/" .
     else
-      tar -zxf "${WORKPWD}/src/${Sources[$i,DLFinal]}"
+      tar -zxf "${WORKPWD}/src/${Sources[$i,DLFinal]}" >>$output_log 2>&1
     fi
     if [ ! -z "${Sources[$i,ConfigureSwitch]}" ]; then
       cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
-      sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module ${Sources[$i,ConfigureSwitch]}=\"\$(CURDIR)\/debian\/modules\/${Sources[$i,UnpackName]}\"/g" rules
+      if [ "${Sources[$i,Package]}" = "Naxsi" ]; then
+        # Naxsi has a different folder structure then other modules...
+        sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module ${Sources[$i,ConfigureSwitch]}=\"\$(CURDIR)\/debian\/modules\/${Sources[$i,UnpackName]}\/naxsi_src\"/g" rules >>$output_log 2>&1
+      else
+        sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module ${Sources[$i,ConfigureSwitch]}=\"\$(CURDIR)\/debian\/modules\/${Sources[$i,UnpackName]}\"/g" rules >>$output_log 2>&1
+      fi
     fi
-
   fi
 done
 if [ "${BUILD_HTTP3}" = true ]; then
   cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
-  sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v3_module --with-http_quic_module --with-stream_quic_module/g" rules
-  sed -i "s/CFLAGS=\"\"/CFLAGS=\"-Wno-ignored-qualifiers\"/g" rules
-  sed -i "s/--with-cc-opt=\"\$(CFLAGS)\" --with-ld-opt=\"\$(LDFLAGS)\"/--with-cc-opt=\"-I..\/modules\/boringssl\/include \$(CFLAGS)\" --with-ld-opt=\"-L..\/modules\/boringssl\/build\/ssl -L..\/modules\/boringssl\/build\/crypto \$(LDFLAGS)\"/g" rules
+  sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v3_module --with-http_quic_module --with-stream_quic_module/g" rules >>$output_log 2>&1
+  sed -i "s/CFLAGS=\"\"/CFLAGS=\"-Wno-ignored-qualifiers\"/g" rules >>$output_log 2>&1
+  sed -i "s/--with-cc-opt=\"\$(CFLAGS)\" --with-ld-opt=\"\$(LDFLAGS)\"/--with-cc-opt=\"-I..\/modules\/boringssl\/include \$(CFLAGS)\" --with-ld-opt=\"-L..\/modules\/boringssl\/build\/ssl -L..\/modules\/boringssl\/build\/crypto \$(LDFLAGS)\"/g" rules >>$output_log 2>&1
 fi
+
+echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+echo -ne "       Applying nginx patches                 "
 
 cd "${WORKPWD}/build/nginx-${NGINX_VERSION}"
 if [ "${LATEST_OPENSSL}" = true ]; then
   if [ "${OPENSSL_VERSION::1}" = "3" ]; then
-    patch -p0 < "${WORKPWD}/custom/patches/openssl-3.0.x-compile.patch"
+    patch -p0 < "${WORKPWD}/custom/patches/openssl-3.0.x-compile.patch" >>$output_log 2>&1
   else
-    patch -p0 < "${WORKPWD}/custom/patches/openssl-1.1.x-compile.patch"
+    patch -p0 < "${WORKPWD}/custom/patches/openssl-1.1.x-compile.patch" >>$output_log 2>&1
   fi
 fi
 if [ "${USE_CUSTOM_PATCHES}" = true ]; then
   if [ ! -f ".patchdone" ]; then
     cp "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6.patch" "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"
-    sed -i "s/@CACHEPVER@/${CACHE_PURGE_VERSION}/g" "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"
-    patch -p0 < "${WORKPWD}/custom/patches/nginx-version.patch"
+    sed -i "s/@CACHEPVER@/${CACHE_PURGE_VERSION}/g" "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch" >>$output_log 2>&1
+    patch -p0 < "${WORKPWD}/custom/patches/nginx-version.patch" >>$output_log 2>&1
     cd debian
-    sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules
-    patch -p0 < "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"
+    sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules >>$output_log 2>&1
+    patch -p0 < "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch" >>$output_log 2>&1
     cd ..
     if [ "${BUILD_HTTP3}" = true ]; then
-      patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003_http3.patch"
+      patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003_http3.patch" >>$output_log 2>&1
     else
-      patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003.patch"
+      patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003.patch" >>$output_log 2>&1
     fi
-    patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_dynamic_tls_records_1015008.patch"
+    patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_dynamic_tls_records_1015008.patch" >>$output_log 2>&1
     touch .patchdone
     rm -f "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"
   fi
 fi
+
+echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+echo -ne "       Adding custom configs                  "
+
 cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
 echo "/etc/nginx/sites-available" >> nginx.dirs
 echo "/etc/nginx/sites-enabled" >> nginx.dirs
 echo "/var/cache/nginx/pagespeed" >> nginx.dirs
 if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
-  echo -en "Inserting Configs..."
   echo "/etc/nginx/conf.d/custom" >> nginx.dirs
   cp -f "${WORKPWD}/custom/configs/nginx.conf" "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/nginx.conf"
   mkdir custom
   cp -f ${WORKPWD}/custom/configs/*.conf* custom/
   for i in "${confs[@]}"
   do
-    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/$i \$\(INSTALLDIR\)\/etc\/nginx\/conf.d\/custom\/$i" rules
-    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/$i \$\(INSTALLDIR\)\/etc\/nginx\/conf.d\/custom\/$i" nginx.rules.in
+    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/$i \$\(INSTALLDIR\)\/etc\/nginx\/conf.d\/custom\/$i" rules >>$output_log 2>&1
+    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/$i \$\(INSTALLDIR\)\/etc\/nginx\/conf.d\/custom\/$i" nginx.rules.in >>$output_log 2>&1
   done
-  sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" rules
-  sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" nginx.rules.in
+  sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" rules >>$output_log 2>&1
+  sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" nginx.rules.in >>$output_log 2>&1
   if [ "${BUILD_HTTP3}" = true ]; then
-    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" rules
-    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" nginx.rules.in
+    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" rules >>$output_log 2>&1
+    sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" nginx.rules.in >>$output_log 2>&1
   fi
-  sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" rules
-  sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" nginx.rules.in
-  sed -i "/^\tln -s \/usr.*/i \\\tln -s \/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" rules
-  sed -i "/^\tln -s \/usr.*/i \\\tln -s \/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" nginx.rules.in
-  echo -e "OK"
+  sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" rules >>$output_log 2>&1
+  sed -i "s/^\tinstall -m 644 debian\/nginx.default.conf.*/\tinstall -m 644 debian\/custom\/nginx.default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/default.conf/g" nginx.rules.in >>$output_log 2>&1
+  sed -i "/^\tln -s \/usr.*/i \\\tln -s \/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" rules >>$output_log 2>&1
+  sed -i "/^\tln -s \/usr.*/i \\\tln -s \/etc\/nginx\/sites-available\/default.conf \$\(INSTALLDIR\)\/etc\/nginx\/sites-enabled\/default.conf" nginx.rules.in >>$output_log 2>&1
 fi
 cd "${WORKPWD}"
+echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 # exit 0;
 
 
@@ -322,10 +337,21 @@ else
   mkdir output
 fi
 
-docker build -t "docker-deb-builder:${DISTRO_VERSION}" -f "docker/Dockerfile-${DISTRO_NAME}-${DISTRO_VERSION}" .
+echo -ne "       Preparing Docker dev image             "
+docker build -t "docker-deb-builder:${DISTRO_VERSION}" -f "docker/Dockerfile-${DISTRO_NAME}-${DISTRO_VERSION}" . >>$output_log 2>&1
+echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 cd "${WORKPWD}"
 export BUILD_HTTP3
-./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output "build/nginx-${NGINX_VERSION}"
+echo -ne "       Compiling nginx                        "
+./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output "build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
+echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+echo -ne "       Testing result package                 "
+./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output -t "nginx-${NGINX_VERSION}" "build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
+echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 
-# Test package
-# ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output -t "nginx-${NGINX_VERSION}" "build/nginx-${NGINX_VERSION}"
+echo ""
+echo -e "${CGREEN}##################################${CEND}"
+echo " Result "
+ls -l output/
+echo -e "${CGREEN}##################################${CEND}"
+echo ""

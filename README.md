@@ -17,6 +17,8 @@ The idea for this project was inspired by [nginx-more](https://github.com/karljo
 *   [GeoIP2](https://github.com/leev/ngx_http_geoip2_module)
 *   [Echo](https://github.com/openresty/echo-nginx-module)
 *   [ModSecurity](https://github.com/SpiderLabs/ModSecurity-nginx)
+*   [Naxsi](https://github.com/nbs-system/naxsi)
+*   [RTMP](https://github.com/arut/nginx-rtmp-module)
 
 ## Patches
 

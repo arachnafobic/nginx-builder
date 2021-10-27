@@ -1,6 +1,8 @@
 declare -A Sources
 declare -i package_counter
 
+output_log=/tmp/nginx-builder.log
+
 # Distro info in all lowercase
 # Be aware off the fact that nginx only supplies downloads for the "debian" folder for the latest distro releases when a new nginx version is released
 # So for example, nginx 1.21.3 only has these downloads for debian 10 (buster) and 11 (bullseye) or ubuntu 18 (bionic), 20 (focal) and 22 (hirsute)
