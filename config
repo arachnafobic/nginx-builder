@@ -25,12 +25,16 @@ CHECKSUM_CHECKS=false
 USE_CUSTOM_PATCHES=true
 USE_CUSTOM_CONFIGS=true
 
-# Setting http3 to true will automaticly switch openssl with boringssl
+# Setting http3 to true will automaticly switch openssl/libressl with boringssl
 # and enable nginx-quic. These never have to manually be set to true below.
 BUILD_HTTP3=false
 
+# Only one of these 2 can be true, but, both can be false to use the distro's libraries.
 # https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
 LATEST_OPENSSL=true
+# https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/
+LIBRESSL=false
+
 # https://www.modpagespeed.com/
 PAGESPEED=true
 # https://github.com/google/ngx_brotli
@@ -61,6 +65,9 @@ OPENSSL_VERSION=1.1.1l
 # Openssl 3.0.0 is beeing worked on, but right now, it won't compile in this setup
 #OPENSSL_VERSION=3.0.0
 OPENSSL_SHA256=0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1
+
+LIBRESSL_VERSION=3.4.1
+LIBRESSL_SHA256=107ceae6ca800e81cb563584c16afa36d6c7138fade94a2b3e9da65456f7c61c
 
 PAGESPEED_VERSION=v1.13.35.2-stable
 #PAGESPEED_VERSION=v1.14.33.1-RC1
@@ -145,6 +152,20 @@ Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="openssl-${OPENSSL_VERSION}"
 Sources[$package_counter,ConfigureSwitch]="--with-openssl-opt='enable-ec_nistp_64_gcc_128 enable-tls1_3 no-ssl3-method -march=native' --with-openssl"
+let "package_counter++"
+
+Sources[$package_counter,Package]="LibreSSL"
+Sources[$package_counter,Install]="${LIBRESSL}"
+Sources[$package_counter,Version]="${LIBRESSL_VERSION}"
+Sources[$package_counter,DLFile]="libressl-${LIBRESSL_VERSION}.tar.gz"
+Sources[$package_counter,DLUrl]="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL_VERSION}.tar.gz"
+Sources[$package_counter,DLAltUrl]=""
+Sources[$package_counter,DLSha256]="${LIBRESSL_SHA256}"
+Sources[$package_counter,DLFinal]="libressl-${LIBRESSL_VERSION}.tar.gz"
+Sources[$package_counter,Git]=false
+Sources[$package_counter,UnpackLoc]="debian/modules"
+Sources[$package_counter,UnpackName]="libressl-${LIBRESSL_VERSION}"
+Sources[$package_counter,ConfigureSwitch]="--with-cc-opt='-g -O2 -fPIC -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-Bsymbolic-functions -fPIC -Wl,-z,relro -Wl,-z,now' --with-openssl"
 let "package_counter++"
 
 Sources[$package_counter,Package]="Pagespeed"

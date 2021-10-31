@@ -9,9 +9,21 @@ if [ ! -f "./config" ]; then
 fi
 source ./config
 
+if [[ "${LATEST_OPENSSL}" = true && "${LIBRESSL}" == true ]]; then
+  echo "Both Latest OpenSSL and LibreSSL are set to true in the config, this is not possible to run."
+  exit 1;
+fi
+
 if [ "${BUILD_HTTP3}" = true ]; then
-  Sources[2,Install]=false
-  Sources[12,Install]=true
+  for (( i = 0; i <= $package_counter; i++ ))
+  do
+    if [[ "${Sources[$i,Package]}" == "OpenSSL" || "${Sources[$i,Package]}" == "LibreSSL" ]]; then
+      Sources[$i,Install]=false
+    fi
+    if [ "${Sources[$i,Package]}" == "BoringSSL" ]; then
+      Sources[$i,Install]=true
+    fi
+  done
   required_packages="curl tar jq docker.io git mercurial rsync"
 else
   required_packages="curl tar jq docker.io git"
@@ -109,7 +121,7 @@ fi
 if [ -z "${modules_disabled}" ]; then
   modules_disabled=" None"
 else
-  modules_disabled="${modules_dynamic::-1}"
+  modules_disabled="${modules_disabled::-1}"
 fi
 
 # clean previous install log
@@ -130,13 +142,17 @@ echo " Logging in    : ${output_log}"
 echo ""
 echo -e "  - Nginx release : ${NGINX_VERSION}-${NGINX_SUBVERSION}"
 if [ "${LATEST_OPENSSL}" = true ]; then
-  echo -e "  - OPENSSL : ${OPENSSL_VERSION}"
+  echo -e "  - OpenSSL : ${OPENSSL_VERSION}"
 else
-  echo -e "  - OPENSSL : Distro Default"
+  if [ "${LIBRESSL}" = true ]; then
+    echo -e "  - LibreSSL : ${LIBRESSL_VERSION}"
+  else
+    echo -e "  - OpenSSL : Distro Default"
+  fi
 fi
 echo "  - Static modules :${modules_static}"
 echo "  - Dynamic modules :${modules_dynamic}"
-echo "  - Disabled modules :${modules_dynamic}"
+echo "  - Disabled modules :${modules_disabled}"
 echo "  - Pagespeed : ${compile_pagespeed}"
 echo "  - Naxsi : ${compile_naxsi}"
 echo "  - RTMP : ${compile_rtmp}"
@@ -144,7 +160,10 @@ echo "  - RTMP : ${compile_rtmp}"
 #    echo -e "  - LIBRESSL : $LIBRESSL_VALID"
 echo ""
 
+
+##################################
 # Fetch sources
+##################################
 echo -ne "       Downloading Modules                    "
 if [ ! -d "src" ]; then
   mkdir src
@@ -211,7 +230,9 @@ echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 # exit 0;
 
 
+##################################
 # Setup build directory
+##################################
 echo -ne "       Setup Build folder                     "
 if [ ! -d "build" ]; then
   mkdir build
@@ -264,8 +285,12 @@ if [ "${BUILD_HTTP3}" = true ]; then
   sed -i "s/CFLAGS=\"\"/CFLAGS=\"-Wno-ignored-qualifiers\"/g" rules >>$output_log 2>&1
   sed -i "s/--with-cc-opt=\"\$(CFLAGS)\" --with-ld-opt=\"\$(LDFLAGS)\"/--with-cc-opt=\"-I..\/modules\/boringssl\/include \$(CFLAGS)\" --with-ld-opt=\"-L..\/modules\/boringssl\/build\/ssl -L..\/modules\/boringssl\/build\/crypto \$(LDFLAGS)\"/g" rules >>$output_log 2>&1
 fi
-
 echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+
+
+##################################
+# Apply Patches
+##################################
 echo -ne "       Applying nginx patches                 "
 
 cd "${WORKPWD}/build/nginx-${NGINX_VERSION}"
@@ -275,6 +300,9 @@ if [ "${LATEST_OPENSSL}" = true ]; then
   else
     patch -p0 < "${WORKPWD}/custom/patches/openssl-1.1.x-compile.patch" >>$output_log 2>&1
   fi
+fi
+if [ "${LIBRESSL}" = true ]; then
+  patch -p0 < "${WORKPWD}/custom/patches/openssl-3.0.x-compile.patch" >>$output_log 2>&1
 fi
 if [ "${USE_CUSTOM_PATCHES}" = true ]; then
   if [ ! -f ".patchdone" ]; then
@@ -295,8 +323,12 @@ if [ "${USE_CUSTOM_PATCHES}" = true ]; then
     rm -f "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"
   fi
 fi
-
 echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+
+
+##################################
+# Add Configs
+##################################
 echo -ne "       Adding custom configs                  "
 
 cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
@@ -329,7 +361,9 @@ echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 # exit 0;
 
 
+##################################
 # Build the package
+##################################
 if [ ! -d "output" ]; then
   mkdir output
 else
@@ -339,15 +373,27 @@ fi
 
 echo -ne "       Preparing Docker dev image             "
 docker build -t "docker-deb-builder:${DISTRO_VERSION}" -f "docker/Dockerfile-${DISTRO_NAME}-${DISTRO_VERSION}" . >>$output_log 2>&1
-echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+if [ $? -ne 0 ]; then
+  fail ""
+else
+  echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+fi
 cd "${WORKPWD}"
 export BUILD_HTTP3
 echo -ne "       Compiling nginx                        "
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output "build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
-echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+if [ $? -ne 0 ]; then
+  fail ""
+else
+  echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+fi
 echo -ne "       Testing result package                 "
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output -t "nginx-${NGINX_VERSION}" "build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
-echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+if [ $? -ne 0 ]; then
+  fail ""
+else
+  echo -ne "[${CGREEN}OK${CEND}]\\r\n"
+fi
 
 echo ""
 echo -e "${CGREEN}##################################${CEND}"
