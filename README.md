@@ -1,8 +1,8 @@
 ## Synopsis
 
-Nginx-builder is a set of scripts able to compile Nginx for Ubuntu/Debian with additional modules such as HTTP2, HTTP3, PageSpeed, Brotli, More Headers, Cache Purge, VTS, GeoIP2, Echo. It's compiled
-inside a docker image using recent GCC version and optionally with the latest OpenSSL or LibreSSL sources. It also includes some built-in configurations such as WordPress and Laravel php-fpm setup.
-Everything with optional switches in the config file.
+Nginx-builder is a set of scripts able to create Nginx packages for Ubuntu/Debian with additional modules such as HTTP2, HTTP3, PageSpeed, Brotli, More Headers, Cache Purge, VTS, GeoIP2, Echo.\
+It's compiled inside a docker image using recent GCC version and optionally with the latest OpenSSL or LibreSSL sources. It also includes some built-in configurations such as WordPress and
+Laravel php-fpm setup. Everything with optional switches in the config file.
 
 The idea for this project was inspired by [nginx-more](https://github.com/karljohns0n/nginx-more/) and [nginx-ee](https://github.com/VirtuBox/nginx-ee/).
 
