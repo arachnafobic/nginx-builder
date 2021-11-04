@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo " --------------------------------------------------------------------------- "
+echo "   Nginx-builder : automated Nginx package creation with additional modules  "
+echo " --------------------------------------------------------------------------- "
+
+
 ##################################
 # Initialize
 ##################################
@@ -14,22 +19,17 @@ if [[ "${LATEST_OPENSSL}" = true && "${LIBRESSL}" == true ]]; then
   exit 1;
 fi
 
-if [ "${BUILD_HTTP3}" = true ]; then
-  for (( i = 0; i <= $package_counter; i++ ))
-  do
-    if [[ "${Sources[$i,Package]}" == "OpenSSL" || "${Sources[$i,Package]}" == "LibreSSL" ]]; then
-      Sources[$i,Install]=false
-    fi
-    if [ "${Sources[$i,Package]}" == "BoringSSL" ]; then
-      Sources[$i,Install]=true
-    fi
-  done
-  required_packages="curl tar jq docker.io git mercurial rsync"
-else
-  required_packages="curl tar jq docker.io git"
-fi
+_help() {
+  echo ""
+  echo "Usage: ./nginx-build.sh <options>"
+  echo "By default, Nginx-builder will compile Nginx according to how the config file is setup"
+  echo "  Options:"
+  echo "       -h, --help ..... display this help"
+  echo "       -i, --interactive ....... interactive installation"
+  echo ""
+  return 0
+}
 
-# check if a command exist
 command_exists() {
   command -v "$@" >/dev/null 2>&1
 }
@@ -45,6 +45,36 @@ fail() {
   echo ""
   exit 1;
 }
+
+INTERACTIVE=false
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+    -i | --interactive)
+        INTERACTIVE=true
+        ;;
+    -h | --help)
+        _help
+        exit 1
+        ;;
+    *) ;;
+    esac
+    shift
+done
+
+if [ "${BUILD_HTTP3}" = true ]; then
+  for (( i = 0; i <= $package_counter; i++ ))
+  do
+    if [[ "${Sources[$i,Package]}" == "OpenSSL" || "${Sources[$i,Package]}" == "LibreSSL" ]]; then
+      Sources[$i,Install]=false
+    fi
+    if [ "${Sources[$i,Package]}" == "BoringSSL" ]; then
+      Sources[$i,Install]=true
+    fi
+  done
+  required_packages="curl tar jq docker.io git mercurial rsync"
+else
+  required_packages="curl tar jq docker.io git"
+fi
 
 missing_packages=""
 # check if required packages are installed
@@ -70,6 +100,10 @@ fi
 ##################################
 WORKPWD="${PWD}"
 readonly OS_ARCH="$(uname -m)"
+NGINX_MAINLINE="$(curl -sL https://nginx.org/en/download.html 2>&1 | grep -E -o 'nginx\-[0-9.]+\.tar[.a-z]*' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)"
+eval NGINX_MAINLINE_SUB="\$(curl -sL http://nginx.org/packages/mainline/ubuntu/pool/nginx/n/nginx/ 2>&1 | grep -E -o 'nginx_${NGINX_MAINLINE}.*_amd64\.deb*' | awk -F \"nginx_${NGINX_MAINLINE}-\" '/~.*_amd64.deb.>/ {print \$2}' | sed -e 's|~.*_amd64\.deb.>||g' | head -n 1 2>&1)"
+NGINX_STABLE="$(curl -sL https://nginx.org/en/download.html 2>&1 | grep -E -o 'nginx\-[0-9.]+\.tar[.a-z]*' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 2 | grep 1.20 2>&1)"
+eval NGINX_STABLE_SUB="\$(curl -sL http://nginx.org/packages/ubuntu/pool/nginx/n/nginx/ 2>&1 | grep -E -o 'nginx_${NGINX_STABLE}.*_amd64\.deb*' | awk -F \"nginx_${NGINX_STABLE}-\" '/~.*_amd64.deb.>/ {print \$2}' | sed -e 's|~.*_amd64\.deb.>||g' | head -n 1 2>&1)"
 
 # Colors
 CSI='\033['
@@ -127,6 +161,112 @@ fi
 # clean previous install log
 echo "" >$output_log
 
+
+##################################
+# Process Interactive
+##################################
+if [ "$INTERACTIVE" = true ]; then
+    echo ""
+    echo "Which Nginx would you like to compile ?"
+    echo "  [1] Mainline v${NGINX_MAINLINE}-${NGINX_MAINLINE_SUB}"
+    echo "  [2] Stable v${NGINX_STABLE}-${NGINX_STABLE_SUB}"
+    echo ""
+    while [[ "$NGINX_RELEASE" != "1" && "$NGINX_RELEASE" != "2" ]]; do
+        echo -ne "Select an option (1-2) [1]: " && read -r NGINX_RELEASE
+        case "${NGINX_RELEASE}" in
+            [1]* )
+                ;;
+            [2]* )
+                ;;
+            * )
+                NGINX_RELEASE="1"
+                ;;
+        esac
+    done
+    echo -e '\nDo you want Ngx_Pagespeed ? (y/n)'
+    while [[ "$PAGESPEED" != "y" && "$PAGESPEED" != "n" ]]; do
+        echo -e "Select an option [y/n]: " && read -r PAGESPEED
+    done
+    if [ "$PAGESPEED" = "y" ]; then
+        echo -e '\nWhat Ngx_Pagespeed release do you want ?\n'
+        echo -e '  [1] Beta Release'
+        echo -e '  [2] Stable Release\n'
+        while [[ "$PAGESPEED_RELEASE" != "1" && "$PAGESPEED_RELEASE" != "2" ]]; do
+            echo -e "Select an option [1-2]: " && read -r PAGESPEED_RELEASE
+        done
+    fi
+    echo -e '\nDo you prefer to compile Nginx with OpenSSL [1] or LibreSSL [2] ? (y/n)'
+    echo -e '  [1] OpenSSL'
+    echo -e '  [2] LibreSSL\n'
+    while [[ "$SSL_LIB_CHOICE" != "1" && "$SSL_LIB_CHOICE" != "2" ]]; do
+        echo -e "Select an option [1-2]: " && read -r SSL_LIB_CHOICE
+    done
+    if [ "$SSL_LIB_CHOICE" = "1" ]; then
+        echo -e '\nWhat OpenSSL release do you want ?\n'
+        echo -e "  [1] OpenSSL stable $OPENSSL_VER\n"
+        echo -e '  [2] OpenSSL from system lib\n'
+        while [[ "$OPENSSL_LIB" != "1" && "$OPENSSL_LIB" != "2" ]]; do
+            echo -e "Select an option [1-2]: " && read -r OPENSSL_LIB
+        done
+    else
+        LIBRESSL="y"
+    fi
+    echo -e '\nDo you want NAXSI WAF (still experimental)? (y/n)'
+    while [[ "$NAXSI" != "y" && "$NAXSI" != "n" ]]; do
+        echo -e "Select an option [y/n]: " && read -r NAXSI
+    done
+    echo -e '\nDo you want RTMP streaming module (used for video streaming) ? (y/n)'
+    while [[ "$RTMP" != "y" && "$RTMP" != "n" ]]; do
+        echo -e "Select an option [y/n]: " && read -r RTMP
+    done
+    echo ""
+fi
+
+if [ "$NGINX_RELEASE" = "2" ]; then
+  NGINX_VERSION="${NGINX_STABLE}"
+  NGINX_SUBVERSION="${NGINX_STABLE_SUB}"
+else
+  NGINX_VERSION="${NGINX_MAINLINE}"
+  NGINX_SUBVERSION="${NGINX_MAINLINE_SUB}"
+fi
+
+if [ "$SSL_LIB_CHOICE" = "1" ]; then
+  LIBRESSL=false
+  if [ "$OPENSSL_LIB" = "1" ]; then
+    LATEST_OPENSSL=true
+  else
+    LATEST_OPENSSL=false
+  fi
+else
+  LIBRESSL=true
+  LATEST_OPENSSL=false
+fi
+
+if [ "$PAGESPEED" = "y" ]; then
+  PAGESPEED=true
+  if [ "$PAGESPEED_RELEASE" = "1" ]; then
+    PAGESPEED_VERSION=v1.14.33.1-RC1
+    PSOL_VERSION=1.13.35.2-x64
+  else
+    PAGESPEED_VERSION=v1.13.35.2-stable
+    PSOL_VERSION=1.13.35.2-x64
+  fi
+else
+  PAGESPEED=false
+fi
+
+if [ "$NAXSI" = "y" ]; then
+  NAXSI=true
+else
+  NAXSI=false
+fi
+
+if [ "$RTMP" = "y" ]; then
+  RTMP=true
+else
+  RTMP=false
+fi
+
 ##################################
 # Display Compilation Summary
 ##################################
@@ -160,6 +300,8 @@ echo "  - RTMP : ${compile_rtmp}"
 #    echo -e "  - LIBRESSL : $LIBRESSL_VALID"
 echo ""
 
+
+exit 0;
 
 ##################################
 # Fetch sources
