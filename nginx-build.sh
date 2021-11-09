@@ -8,12 +8,6 @@ echo " -------------------------------------------------------------------------
 ##################################
 # Initialize
 ##################################
-if [ ! -f "./config" ]; then
-  echo "config file not found."
-  exit 1;
-fi
-source ./config
-
 if [[ "${LATEST_OPENSSL}" = true && "${LIBRESSL}" == true ]]; then
   echo "Both Latest OpenSSL and LibreSSL are set to true in the config, this is not possible to run."
   exit 1;
@@ -61,40 +55,6 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-if [ "${BUILD_HTTP3}" = true ]; then
-  for (( i = 0; i <= $package_counter; i++ ))
-  do
-    if [[ "${Sources[$i,Package]}" == "OpenSSL" || "${Sources[$i,Package]}" == "LibreSSL" ]]; then
-      Sources[$i,Install]=false
-    fi
-    if [ "${Sources[$i,Package]}" == "BoringSSL" ]; then
-      Sources[$i,Install]=true
-    fi
-  done
-  required_packages="curl tar jq docker.io git mercurial rsync"
-else
-  required_packages="curl tar jq docker.io git"
-fi
-
-missing_packages=""
-# check if required packages are installed
-for package in $required_packages; do
-  if ! package_installed "${package}"; then
-    missing_packages="${missing_packages} ${package}"
-  fi
-done
-
-# Checking if lsb_release is installed
-if ! command_exists lsb_release; then
-    missing_packages="${missing_packages} lsb-release"
-fi
-
-# Report any missing packages
-if [ ! -z "${missing_packages}" ]; then
-  echo "Please install the following package(s) :${missing_packages}"
-  exit 0;
-fi
-
 ##################################
 # Variables
 ##################################
@@ -111,115 +71,297 @@ CRED="${CSI}1;31m"
 CGREEN="${CSI}1;32m"
 CEND="${CSI}0m"
 
-# Module report
-modules_static=""
-modules_dynamic=""
-modules_disabled=""
-compile_pagespeed="No"
-compile_naxsi="No"
-compile_rtmp="No"
-for (( i = 0; i <= $package_counter; i++ ))
-do
-  if [ "${Sources[$i,Install]}" = true ]; then
-    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-module" ]; then
-      modules_static="${modules_static} ${Sources[$i,Package]},"
-    fi
-    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]; then
-      modules_dynamic="${modules_dynamic} ${Sources[$i,Package]},"
-    fi
-    if [ "${Sources[$i,Package]}" == "Pagespeed" ]; then
-      compile_pagespeed="Yes"
-    fi
-    if [ "${Sources[$i,Package]}" == "Naxsi" ]; then
-      compile_naxsi="Yes"
-    fi
-    if [ "${Sources[$i,Package]}" == "RTMP" ]; then
-      compile_rtmp="Yes"
-    fi
-  else
-    if [[ "${Sources[$i,ConfigureSwitch]}" == "--add-module" || "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]]; then
-      modules_disabled="${modules_disabled} ${Sources[$i,Package]},"
-    fi
-  fi
-done
-if [ -z "${modules_static}" ]; then
-  modules_static=" None"
-else
-  modules_static="${modules_static::-1}"
-fi
-if [ -z "${modules_dynamic}" ]; then
-  modules_dynamic=" None"
-else
-  modules_dynamic="${modules_dynamic::-1}"
-fi
-if [ -z "${modules_disabled}" ]; then
-  modules_disabled=" None"
-else
-  modules_disabled="${modules_disabled::-1}"
-fi
-
-# clean previous install log
-echo "" >$output_log
-
 
 ##################################
 # Process Interactive
 ##################################
 if [ "$INTERACTIVE" = true ]; then
-    echo ""
-    echo "Which Nginx would you like to compile ?"
-    echo "  [1] Mainline v${NGINX_MAINLINE}-${NGINX_MAINLINE_SUB}"
-    echo "  [2] Stable v${NGINX_STABLE}-${NGINX_STABLE_SUB}"
-    echo ""
-    while [[ "$NGINX_RELEASE" != "1" && "$NGINX_RELEASE" != "2" ]]; do
-        echo -ne "Select an option (1-2) [1]: " && read -r NGINX_RELEASE
-        case "${NGINX_RELEASE}" in
-            [1]* )
-                ;;
-            [2]* )
-                ;;
-            * )
-                NGINX_RELEASE="1"
-                ;;
-        esac
+  echo -e "\nWhich Distro are you compiling Nginx for ?"
+  echo -e "  [1] Debian"
+  echo -e "  [2] Ubuntu\n"
+  while [[ "$DISTRO_CHOICE" != "1" && "$DISTRO_CHOICE" != "2" ]]; do
+    echo -ne "Select an option (1-2) [2]: " && read -r DISTRO_CHOICE
+    case "${DISTRO_CHOICE}" in
+      [1]* )
+        ;;
+      [2]* )
+        ;;
+      * )
+        DISTRO_CHOICE="2"
+        ;;
+    esac
+  done
+  if [ "$DISTRO_CHOICE" = "1" ]; then
+    echo -e "\nWhich version of Debian ?"
+    echo -e "  [1] Debian 11 bullseye (11.1)"
+    echo -e "  [2] Debian 10 buster (10.11)\n"
+    while [[ "$DISTRO_VERSION" != "1" && "$DISTRO_VERSION" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r DISTRO_VERSION
+      case "${DISTRO_VERSION}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          DISTRO_VERSION="1"
+          ;;
+      esac
     done
-    echo -e '\nDo you want Ngx_Pagespeed ? (y/n)'
-    while [[ "$PAGESPEED" != "y" && "$PAGESPEED" != "n" ]]; do
-        echo -e "Select an option [y/n]: " && read -r PAGESPEED
+  else
+    echo -e "\nWhich version of Ubuntu ?"
+    echo -e "  [1] Ubuntu 20.04 Focal Fossa"
+    echo -e "  [2] Ubuntu 18.04 Bionic Beaver\n"
+    while [[ "$DISTRO_VERSION" != "1" && "$DISTRO_VERSION" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r DISTRO_VERSION
+      case "${DISTRO_VERSION}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          DISTRO_VERSION="1"
+          ;;
+      esac
     done
-    if [ "$PAGESPEED" = "y" ]; then
-        echo -e '\nWhat Ngx_Pagespeed release do you want ?\n'
-        echo -e '  [1] Beta Release'
-        echo -e '  [2] Stable Release\n'
-        while [[ "$PAGESPEED_RELEASE" != "1" && "$PAGESPEED_RELEASE" != "2" ]]; do
-            echo -e "Select an option [1-2]: " && read -r PAGESPEED_RELEASE
-        done
-    fi
-    echo -e '\nDo you prefer to compile Nginx with OpenSSL [1] or LibreSSL [2] ? (y/n)'
-    echo -e '  [1] OpenSSL'
-    echo -e '  [2] LibreSSL\n'
-    while [[ "$SSL_LIB_CHOICE" != "1" && "$SSL_LIB_CHOICE" != "2" ]]; do
-        echo -e "Select an option [1-2]: " && read -r SSL_LIB_CHOICE
+  fi
+
+  echo -e "\nWhich Nginx would you like to compile ?"
+  echo -e "  [1] Mainline v${NGINX_MAINLINE}-${NGINX_MAINLINE_SUB}"
+  echo -e "  [2] Stable v${NGINX_STABLE}-${NGINX_STABLE_SUB}\n"
+  while [[ "$NGINX_RELEASE" != "1" && "$NGINX_RELEASE" != "2" ]]; do
+    echo -ne "Select an option (1-2) [1]: " && read -r NGINX_RELEASE
+    case "${NGINX_RELEASE}" in
+      [1]* )
+        ;;
+      [2]* )
+        ;;
+      * )
+        NGINX_RELEASE="1"
+        ;;
+    esac
+  done
+
+  echo -e "\nWhich SSL library do you prefer to compile Nginx with ?"
+  echo -e "  [1] OpenSSL"
+  echo -e "  [2] LibreSSL\n"
+  while [[ "$SSL_LIB_CHOICE" != "1" && "$SSL_LIB_CHOICE" != "2" ]]; do
+    echo -ne "Select an option (1-2) [1]: " && read -r SSL_LIB_CHOICE
+    case "${SSL_LIB_CHOICE}" in
+      [1]* )
+        ;;
+      [2]* )
+        ;;
+      * )
+        SSL_LIB_CHOICE="1"
+        ;;
+    esac
+  done
+  if [ "$SSL_LIB_CHOICE" = "1" ]; then
+    echo -e "\nWhat OpenSSL release do you want ?"
+    echo -e "  [1] OpenSSL stable $OPENSSL_VER"
+    echo -e "  [2] OpenSSL from system lib\n"
+    while [[ "$OPENSSL_LIB" != "1" && "$OPENSSL_LIB" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r OPENSSL_LIB
+      case "${OPENSSL_LIB}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          OPENSSL_LIB="1"
+          ;;
+      esac
     done
-    if [ "$SSL_LIB_CHOICE" = "1" ]; then
-        echo -e '\nWhat OpenSSL release do you want ?\n'
-        echo -e "  [1] OpenSSL stable $OPENSSL_VER\n"
-        echo -e '  [2] OpenSSL from system lib\n'
-        while [[ "$OPENSSL_LIB" != "1" && "$OPENSSL_LIB" != "2" ]]; do
-            echo -e "Select an option [1-2]: " && read -r OPENSSL_LIB
-        done
-    else
-        LIBRESSL="y"
-    fi
-    echo -e '\nDo you want NAXSI WAF (still experimental)? (y/n)'
-    while [[ "$NAXSI" != "y" && "$NAXSI" != "n" ]]; do
-        echo -e "Select an option [y/n]: " && read -r NAXSI
+  fi
+
+  echo -e "\n\n\nNginx Modules Selection :"
+
+  while [[ "$PAGESPEED" != "y" && "$PAGESPEED" != "n" ]]; do
+    echo -ne "\nDo you want Pagespeed ? (Y/n) [Y]: " && read -r PAGESPEED
+    case "${PAGESPEED}" in
+      [Yy]* )
+        PAGESPEED="y"
+        ;;
+      [Nn]* )
+        PAGESPEED="n"
+        ;;
+      * )
+        PAGESPEED="y"
+        ;;
+    esac
+  done
+  if [ "$PAGESPEED" = "y" ]; then
+    echo -e "\nWhat Pagespeed release do you want ?"
+    echo -e "  [1] Beta Release"
+    echo -e "  [2] Stable Release\n"
+    while [[ "$PAGESPEED_RELEASE" != "1" && "$PAGESPEED_RELEASE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [2]: " && read -r PAGESPEED_RELEASE
+      case "${PAGESPEED_RELEASE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          PAGESPEED_RELEASE="2"
+          ;;
+      esac
     done
-    echo -e '\nDo you want RTMP streaming module (used for video streaming) ? (y/n)'
-    while [[ "$RTMP" != "y" && "$RTMP" != "n" ]]; do
-        echo -e "Select an option [y/n]: " && read -r RTMP
-    done
-    echo ""
+  fi
+
+  while [[ "$BROTLI" != "y" && "$BROTLI" != "n" ]]; do
+    echo -ne "\nDo you want Brotli ? (Y/n) [Y]: " && read -r BROTLI
+    case "${BROTLI}" in
+      [Yy]* )
+        BROTLI="y"
+        ;;
+      [Nn]* )
+        BROTLI="n"
+        ;;
+      * )
+        BROTLI="y"
+        ;;
+    esac
+  done
+
+  while [[ "$HEADERS_MORE" != "y" && "$HEADERS_MORE" != "n" ]]; do
+    echo -ne "\nDo you want Headers More ? (Y/n) [Y]: " && read -r HEADERS_MORE
+    case "${HEADERS_MORE}" in
+      [Yy]* )
+        HEADERS_MORE="y"
+        ;;
+      [Nn]* )
+        HEADERS_MORE="n"
+        ;;
+      * )
+        HEADERS_MORE="y"
+        ;;
+    esac
+  done
+
+  while [[ "$CACHE_PURGE" != "y" && "$CACHE_PURGE" != "n" ]]; do
+    echo -ne "\nDo you want Cache Purge ? (Y/n) [Y]: " && read -r CACHE_PURGE
+    case "${CACHE_PURGE}" in
+      [Yy]* )
+        CACHE_PURGE="y"
+        ;;
+      [Nn]* )
+        CACHE_PURGE="n"
+        ;;
+      * )
+        CACHE_PURGE="y"
+        ;;
+    esac
+  done
+
+  while [[ "$VTS" != "y" && "$VTS" != "n" ]]; do
+    echo -ne "\nDo you want Virtual Host Traffic Status ? (Y/n) [Y]: " && read -r VTS
+    case "${VTS}" in
+      [Yy]* )
+        VTS="y"
+        ;;
+      [Nn]* )
+        VTS="n"
+        ;;
+      * )
+        VTS="y"
+        ;;
+    esac
+  done
+
+  while [[ "$GEOIP2" != "y" && "$GEOIP2" != "n" ]]; do
+    echo -ne "\nDo you want GeoIP2 ? (Y/n) [Y]: " && read -r GEOIP2
+    case "${GEOIP2}" in
+      [Yy]* )
+        GEOIP2="y"
+        ;;
+      [Nn]* )
+        GEOIP2="n"
+        ;;
+      * )
+        GEOIP2="y"
+        ;;
+    esac
+  done
+
+  while [[ "$ECHO" != "y" && "$ECHO" != "n" ]]; do
+    echo -ne "\nDo you want Echo ? (Y/n) [Y]: " && read -r ECHO
+    case "${ECHO}" in
+      [Yy]* )
+        ECHO="y"
+        ;;
+      [Nn]* )
+        ECHO="n"
+        ;;
+      * )
+        ECHO="y"
+        ;;
+    esac
+  done
+
+  while [[ "$MODSECURITY" != "y" && "$MODSECURITY" != "n" ]]; do
+    echo -ne "\nDo you want ModSecurity ? (Y/n) [Y]: " && read -r MODSECURITY
+    case "${MODSECURITY}" in
+      [Yy]* )
+        MODSECURITY="y"
+        ;;
+      [Nn]* )
+        MODSECURITY="n"
+        ;;
+      * )
+        MODSECURITY="y"
+        ;;
+    esac
+  done
+
+  while [[ "$NAXSI" != "y" && "$NAXSI" != "n" ]]; do
+    echo -ne "\nDo you want NAXSI WAF (still experimental)? (Y/n) [Y]: " && read -r NAXSI
+    case "${NAXSI}" in
+      [Yy]* )
+        NAXSI="y"
+        ;;
+      [Nn]* )
+        NAXSI="n"
+        ;;
+      * )
+        NAXSI="y"
+        ;;
+    esac
+  done
+
+  while [[ "$RTMP" != "y" && "$RTMP" != "n" ]]; do
+    echo -ne "\nDo you want RTMP streaming module (used for video streaming) ? (y/N) [N] : " && read -r RTMP
+    case "${RTMP}" in
+      [Yy]* )
+        RTMP="y"
+        ;;
+      [Nn]* )
+        RTMP="n"
+        ;;
+      * )
+        RTMP="n"
+        ;;
+    esac
+  done
+fi
+
+if [ "$DISTRO_CHOICE" = "1" ]; then
+  DISTRO_NAME="debian"
+  if [ "$DISTRO_VERSION" = "1" ]; then
+    DISTRO_CODENAME="bullseye"
+    DISTRO_VERSION="11.1"
+  else
+    DISTRO_CODENAME="buster"
+    DISTRO_VERSION="10.11"
+  fi
+else
+  DISTRO_NAME="ubuntu"
+  if [ "$DISTRO_VERSION" = "1" ]; then
+    DISTRO_CODENAME="focal"
+    DISTRO_VERSION="20.04"
+  else
+    DISTRO_CODENAME="bionic"
+    DISTRO_VERSION="18.04"
+  fi
 fi
 
 if [ "$NGINX_RELEASE" = "2" ]; then
@@ -255,6 +397,48 @@ else
   PAGESPEED=false
 fi
 
+if [ "$BROTLI" = "y" ]; then
+  BROTLI=true
+else
+  BROTLI=false
+fi
+
+if [ "$HEADERS_MORE" = "y" ]; then
+  HEADERS_MORE=true
+else
+  HEADERS_MORE=false
+fi
+
+if [ "$CACHE_PURGE" = "y" ]; then
+  CACHE_PURGE=true
+else
+  CACHE_PURGE=false
+fi
+
+if [ "$VTS" = "y" ]; then
+  VTS=true
+else
+  VTS=false
+fi
+
+if [ "$GEOIP2" = "y" ]; then
+  GEOIP2=true
+else
+  GEOIP2=false
+fi
+
+if [ "$ECHO" = "y" ]; then
+  ECHO=true
+else
+  ECHO=false
+fi
+
+if [ "$MODSECURITY" = "y" ]; then
+  MODSECURITY=true
+else
+  MODSECURITY=false
+fi
+
 if [ "$NAXSI" = "y" ]; then
   NAXSI=true
 else
@@ -266,6 +450,91 @@ if [ "$RTMP" = "y" ]; then
 else
   RTMP=false
 fi
+
+
+# Load config for defaults and to build the final arrays used
+if [ ! -f "./config" ]; then
+  echo "config file not found."
+  exit 1;
+fi
+source ./config
+
+# clean previous install log
+echo "" >$output_log
+
+# Ensure http3 uses the right ssl
+if [ "${BUILD_HTTP3}" = true ]; then
+  for (( i = 0; i <= $package_counter; i++ ))
+  do
+    if [[ "${Sources[$i,Package]}" == "OpenSSL" || "${Sources[$i,Package]}" == "LibreSSL" ]]; then
+      Sources[$i,Install]=false
+    fi
+    if [ "${Sources[$i,Package]}" == "BoringSSL" ]; then
+      Sources[$i,Install]=true
+    fi
+  done
+  required_packages="curl tar jq docker.io git mercurial rsync"
+else
+  required_packages="curl tar jq docker.io git"
+fi
+
+missing_packages=""
+# check if required packages are installed
+for package in $required_packages; do
+  if ! package_installed "${package}"; then
+    missing_packages="${missing_packages} ${package}"
+  fi
+done
+
+# Checking if lsb_release is installed
+if ! command_exists lsb_release; then
+    missing_packages="${missing_packages} lsb-release"
+fi
+
+# Report any missing packages
+if [ ! -z "${missing_packages}" ]; then
+  echo "Please install the following package(s) :${missing_packages}"
+  exit 0;
+fi
+
+# Module report
+modules_static=""
+modules_dynamic=""
+modules_disabled=""
+compile_pagespeed="No"
+compile_naxsi="No"
+compile_rtmp="No"
+for (( i = 0; i <= $package_counter; i++ ))
+do
+  if [ "${Sources[$i,Install]}" = true ]; then
+    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-module" ]; then
+      modules_static="${modules_static} ${Sources[$i,Package]},"
+    fi
+    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]; then
+      modules_dynamic="${modules_dynamic} ${Sources[$i,Package]},"
+    fi
+  else
+    if [[ "${Sources[$i,ConfigureSwitch]}" == "--add-module" || "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]]; then
+      modules_disabled="${modules_disabled} ${Sources[$i,Package]},"
+    fi
+  fi
+done
+if [ -z "${modules_static}" ]; then
+  modules_static=" None"
+else
+  modules_static="${modules_static::-1}"
+fi
+if [ -z "${modules_dynamic}" ]; then
+  modules_dynamic=" None"
+else
+  modules_dynamic="${modules_dynamic::-1}"
+fi
+if [ -z "${modules_disabled}" ]; then
+  modules_disabled=" None"
+else
+  modules_disabled="${modules_disabled::-1}"
+fi
+
 
 ##################################
 # Display Compilation Summary
@@ -290,14 +559,12 @@ else
     echo -e "  - OpenSSL : Distro Default"
   fi
 fi
+if [ "$PAGESPEED" = true ]; then
+  echo -e "  - Pagespeed : ${PAGESPEED_VERSION}"
+fi
 echo "  - Static modules :${modules_static}"
 echo "  - Dynamic modules :${modules_dynamic}"
 echo "  - Disabled modules :${modules_disabled}"
-echo "  - Pagespeed : ${compile_pagespeed}"
-echo "  - Naxsi : ${compile_naxsi}"
-echo "  - RTMP : ${compile_rtmp}"
-#  -n "$LIBRESSL_VALID"
-#    echo -e "  - LIBRESSL : $LIBRESSL_VALID"
 echo ""
 
 

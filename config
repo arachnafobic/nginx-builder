@@ -3,64 +3,73 @@ declare -i package_counter
 
 output_log=/tmp/nginx-builder.log
 
-# Distro info in all lowercase
-# Be aware off the fact that nginx only supplies downloads for the "debian" folder for the latest distro releases when a new nginx version is released
-# So for example, nginx 1.21.3 only has these downloads for debian 10 (buster) and 11 (bullseye) or ubuntu 18 (bionic), 20 (focal) and 22 (hirsute)
-#
-# For possible combos check the urls below for the right distribution :
-# http://nginx.org/packages/mainline/_DISTRO_NAME_/pool/nginx/    (versions not in the stable branch)
-# https://nginx.org/packages/_DISTRO_NAME_/pool/nginx/n/nginx/    (versions from the stable branch)
-#
-# Verified combos :
-#        distribution              nginx
-# debian - bullseye - 11.0  / 1.20.1-1 - 1.21.3-1
-# debian - buster   - 10.10 / 1.20.1-1 - 1.21.3-1
-# ubuntu - focal    - 20.04 / 1.20.1-1 - 1.21.3-1
-# ubuntu - bionic   - 18.04 / 1.20.1-1 - 1.21.3-1   (modsecurity only as dynamic module)
-DISTRO_NAME=ubuntu
-DISTRO_CODENAME=focal
-DISTRO_VERSION=20.04
+if [ "$INTERACTIVE" = false ]; then
+  # Distro info in all lowercase
+  # Be aware off the fact that nginx only supplies downloads for the "debian" folder for the latest distro releases when a new nginx version is released
+  # So for example, nginx 1.21.3 only has these downloads for debian 10 (buster) and 11 (bullseye) or ubuntu 18 (bionic), 20 (focal) and 22 (hirsute)
+  #
+  # For possible combos check the urls below for the right distribution :
+  # http://nginx.org/packages/mainline/_DISTRO_NAME_/pool/nginx/    (versions not in the stable branch)
+  # https://nginx.org/packages/_DISTRO_NAME_/pool/nginx/n/nginx/    (versions from the stable branch)
+  #
+  # Verified combos :
+  #        distribution              nginx
+  # debian - bullseye - 11.0  / 1.20.1-1 - 1.21.3-1
+  # debian - buster   - 10.10 / 1.20.1-1 - 1.21.3-1
+  # ubuntu - focal    - 20.04 / 1.20.1-1 - 1.21.3-1
+  # ubuntu - bionic   - 18.04 / 1.20.1-1 - 1.21.3-1   (modsecurity only as dynamic module)
+  DISTRO_NAME=ubuntu
+  DISTRO_CODENAME=focal
+  DISTRO_VERSION=20.04
 
-CHECKSUM_CHECKS=false
-USE_CUSTOM_PATCHES=true
-USE_CUSTOM_CONFIGS=true
+  CHECKSUM_CHECKS=false
+  USE_CUSTOM_PATCHES=true
+  USE_CUSTOM_CONFIGS=true
 
-# Setting http3 to true will automaticly switch openssl/libressl with boringssl
-# and enable nginx-quic. These never have to manually be set to true below.
-BUILD_HTTP3=false
+  # Setting http3 to true will automaticly switch openssl/libressl with boringssl
+  # and enable nginx-quic. These never have to manually be set to true below.
+  BUILD_HTTP3=false
 
-# Only one of these 2 can be true, but, both can be false to use the distro's libraries.
-# https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
-LATEST_OPENSSL=true
-# https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/
-LIBRESSL=false
+  # Only one of these 2 can be true, but, both can be false to use the distro's libraries.
+  # https://www.openssl.org/source/openssl-%{openssl_version}.tar.gz
+  LATEST_OPENSSL=true
+  # https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/
+  LIBRESSL=false
 
-# https://www.modpagespeed.com/
-PAGESPEED=true
-# https://github.com/google/ngx_brotli
-BROTLI=true
-# https://github.com/openresty/headers-more-nginx-module
-HEADERS_MORE=true
-# https://github.com/FRiCKLE/ngx_cache_purge
-CACHE_PURGE=true
-# https://github.com/vozlt/nginx-module-vts
-VTS=true
-# https://github.com/leev/ngx_http_geoip2_module
-GEOIP2=true
-# https://github.com/openresty/echo-nginx-module
-ECHO=true
-# https://github.com/SpiderLabs/ModSecurity-nginx
-MODSECURITY=true
-# https://github.com/nbs-system/naxsi
-NAXSI=true
-# https://github.com/arut/nginx-rtmp-module
-RTMP=false
+  # https://www.modpagespeed.com/
+  PAGESPEED=true
+  # https://github.com/google/ngx_brotli
+  BROTLI=true
+  # https://github.com/openresty/headers-more-nginx-module
+  HEADERS_MORE=true
+  # https://github.com/FRiCKLE/ngx_cache_purge
+  CACHE_PURGE=true
+  # https://github.com/vozlt/nginx-module-vts
+  VTS=true
+  # https://github.com/leev/ngx_http_geoip2_module
+  GEOIP2=true
+  # https://github.com/openresty/echo-nginx-module
+  ECHO=true
+  # https://github.com/SpiderLabs/ModSecurity-nginx
+  MODSECURITY=true
+  # https://github.com/nbs-system/naxsi
+  NAXSI=true
+  # https://github.com/arut/nginx-rtmp-module
+  RTMP=false
 
+  NGINX_VERSION=1.21.4
+  NGINX_SUBVERSION=1
+  NGINX_ORIG_SHA256=d1f72f474e71bcaaf465dcc7e6f7b6a4705e4b1ed95c581af31df697551f3bfe
+  NGINX_DEB_SHA256=2ce9e0b4cd3d891bc04bceda9f63b7f25873550ea1058cbdfd2834901bd912b3
 
-NGINX_VERSION=1.21.4
-NGINX_SUBVERSION=1
-NGINX_ORIG_SHA256=d1f72f474e71bcaaf465dcc7e6f7b6a4705e4b1ed95c581af31df697551f3bfe
-NGINX_DEB_SHA256=2ce9e0b4cd3d891bc04bceda9f63b7f25873550ea1058cbdfd2834901bd912b3
+  PAGESPEED_VERSION=v1.13.35.2-stable
+  #PAGESPEED_VERSION=v1.14.33.1-RC1
+  PAGESPEED_SHA256=68242a30308b21f13de9a36f2aea5c3e34e8a4c0b7c6a37d3369334f6f847d36
+
+  PSOL_VERSION=1.13.35.2-x64
+  #PSOL_VERSION=1.14.36.1
+  PSOL_SHA256=df3ba3c8fc54e13845d0a1daa7a6e3d983126c23912851bbf8ba35be646a434f
+fi
 
 OPENSSL_VERSION=1.1.1l
 # Openssl 3.0.0 is beeing worked on, but right now, it won't compile in this setup
@@ -69,14 +78,6 @@ OPENSSL_SHA256=0b7a3e5e59c34827fe0c3a74b7ec8baef302b98fa80088d7f9153aa16fa76bd1
 
 LIBRESSL_VERSION=3.4.1
 LIBRESSL_SHA256=107ceae6ca800e81cb563584c16afa36d6c7138fade94a2b3e9da65456f7c61c
-
-PAGESPEED_VERSION=v1.13.35.2-stable
-#PAGESPEED_VERSION=v1.14.33.1-RC1
-PAGESPEED_SHA256=68242a30308b21f13de9a36f2aea5c3e34e8a4c0b7c6a37d3369334f6f847d36
-
-PSOL_VERSION=1.13.35.2-x64
-#PSOL_VERSION=1.14.36.1
-PSOL_SHA256=df3ba3c8fc54e13845d0a1daa7a6e3d983126c23912851bbf8ba35be646a434f
 
 HEADERS_MORE_VERSION=0.33
 HEADERS_MORE_SHA256=a3dcbab117a9c103bc1ea5200fc00a7b7d2af97ff7fd525f16f8ac2632e30fbf
