@@ -69,6 +69,39 @@ if [ "$INTERACTIVE" = false ]; then
   PSOL_VERSION=1.13.35.2-x64
   #PSOL_VERSION=1.14.36.1
   PSOL_SHA256=df3ba3c8fc54e13845d0a1daa7a6e3d983126c23912851bbf8ba35be646a434f
+else
+  if [ "$DISTRO_CHOICE" = "1" ]; then
+    DISTRO_NAME="debian"
+    if [ "$DISTRO_VERSION" = "1" ]; then
+      DISTRO_CODENAME="bullseye"
+      DISTRO_VERSION="11.1"
+    else
+      DISTRO_CODENAME="buster"
+      DISTRO_VERSION="10.11"
+    fi
+  else
+    DISTRO_NAME="ubuntu"
+    if [ "$DISTRO_VERSION" = "1" ]; then
+      DISTRO_CODENAME="focal"
+      DISTRO_VERSION="20.04"
+    else
+      DISTRO_CODENAME="bionic"
+      DISTRO_VERSION="18.04"
+    fi
+  fi
+
+  if [ "$PAGESPEED" = "y" ]; then
+    PAGESPEED=true
+    if [ "$PAGESPEED_RELEASE" = "1" ]; then
+      PAGESPEED_VERSION=v1.14.33.1-RC1
+      PSOL_VERSION=1.13.35.2-x64
+    else
+      PAGESPEED_VERSION=v1.13.35.2-stable
+      PSOL_VERSION=1.13.35.2-x64
+    fi
+  else
+    PAGESPEED=false
+  fi
 fi
 
 OPENSSL_VERSION=1.1.1l
@@ -181,7 +214,16 @@ Sources[$package_counter,DLFinal]="pagespeed-${PAGESPEED_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="incubator-pagespeed-ngx-${PAGESPEED_VERSION:1}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$PAGESPEED_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="Pagespeed Psol"
@@ -212,7 +254,16 @@ Sources[$package_counter,DLFinal]="headers-more-v${HEADERS_MORE_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="headers-more-nginx-module-${HEADERS_MORE_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$HEADERS_MORE_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="Cache Purge"
@@ -226,7 +277,16 @@ Sources[$package_counter,DLFinal]="cache-purge-${CACHE_PURGE_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="ngx_cache_purge-${CACHE_PURGE_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$CACHE_PURGE_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="Virtual host traffic status"
@@ -240,7 +300,16 @@ Sources[$package_counter,DLFinal]="vts-v${VTS_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="nginx-module-vts-${VTS_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$VTS_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="GeoIP2"
@@ -254,7 +323,16 @@ Sources[$package_counter,DLFinal]="geoip2-${GEOIP2_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="ngx_http_geoip2_module-${GEOIP2_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$GEOIP2_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="Echo"
@@ -268,7 +346,16 @@ Sources[$package_counter,DLFinal]="echo-v${ECHO_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="echo-nginx-module-${ECHO_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$ECHO_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="Mod Security"
@@ -282,8 +369,16 @@ Sources[$package_counter,DLFinal]="modsecurity-nginx-v${MODSECURITY_VERSION}.tar
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="modsecurity-nginx-v${MODSECURITY_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
-#Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$MODSECURITY_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="Naxsi"
@@ -297,8 +392,16 @@ Sources[$package_counter,DLFinal]="naxsi-${NAXSI_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="naxsi-${NAXSI_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
-#Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$NAXSI_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="RTMP"
@@ -312,8 +415,16 @@ Sources[$package_counter,DLFinal]="rtmp-v${RTMP_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="nginx-rtmp-module-${RTMP_VERSION}"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
-#Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$RTMP_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="Brotli"
@@ -327,7 +438,16 @@ Sources[$package_counter,DLFinal]="ngx_brotli"
 Sources[$package_counter,Git]=true
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="ngx_brotli"
-Sources[$package_counter,ConfigureSwitch]="--add-module"
+if [ "$INTERACTIVE" = false ]; then
+  Sources[$package_counter,ConfigureSwitch]="--add-module"
+  #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+else
+  if [ "$BROTLI_COMPILE" = "1" ]; then
+    Sources[$package_counter,ConfigureSwitch]="--add-module"
+  else
+    Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
+  fi
+fi
 let "package_counter++"
 
 Sources[$package_counter,Package]="BoringSSL"

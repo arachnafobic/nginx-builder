@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo " --------------------------------------------------------------------------- "
-echo "   Nginx-builder : automated Nginx package creation with additional modules  "
-echo " --------------------------------------------------------------------------- "
+echo " ---------------------------------------------------------------------------- "
+echo "   Nginx-builder : automated Nginx package creation with additional modules   "
+echo " ---------------------------------------------------------------------------- "
 
 
 ##################################
@@ -76,6 +76,8 @@ CEND="${CSI}0m"
 # Process Interactive
 ##################################
 if [ "$INTERACTIVE" = true ]; then
+  CHECKSUM_CHECKS=false
+
   echo -e "\nWhich Distro are you compiling Nginx for ?"
   echo -e "  [1] Debian"
   echo -e "  [2] Ubuntu\n"
@@ -141,41 +143,60 @@ if [ "$INTERACTIVE" = true ]; then
     esac
   done
 
-  echo -e "\nWhich SSL library do you prefer to compile Nginx with ?"
-  echo -e "  [1] OpenSSL"
-  echo -e "  [2] LibreSSL\n"
-  while [[ "$SSL_LIB_CHOICE" != "1" && "$SSL_LIB_CHOICE" != "2" ]]; do
-    echo -ne "Select an option (1-2) [1]: " && read -r SSL_LIB_CHOICE
-    case "${SSL_LIB_CHOICE}" in
+  echo -e "\nDo you want to compile Nginx with HTTP/3 support ? (This will default SSL to BoringSSL)"
+  echo -e "  [1] Without HTTP/3 support"
+  echo -e "  [2] With HTTP/3 support\n"
+  while [[ "$BUILD_HTTP3" != true && "$BUILD_HTTP3" != false ]]; do
+    echo -ne "Select an option (1-2) [1]: " && read -r BUILD_HTTP3
+    case "${BUILD_HTTP3}" in
       [1]* )
+        BUILD_HTTP3=false
         ;;
       [2]* )
+        BUILD_HTTP3=true
         ;;
       * )
-        SSL_LIB_CHOICE="1"
+        BUILD_HTTP3=false
         ;;
     esac
   done
-  if [ "$SSL_LIB_CHOICE" = "1" ]; then
-    echo -e "\nWhat OpenSSL release do you want ?"
-    echo -e "  [1] OpenSSL stable $OPENSSL_VER"
-    echo -e "  [2] OpenSSL from system lib\n"
-    while [[ "$OPENSSL_LIB" != "1" && "$OPENSSL_LIB" != "2" ]]; do
-      echo -ne "Select an option (1-2) [1]: " && read -r OPENSSL_LIB
-      case "${OPENSSL_LIB}" in
+
+  if [ "${BUILD_HTTP3}" = false ]; then
+    echo -e "\nWhich SSL library do you prefer to compile Nginx with ?"
+    echo -e "  [1] OpenSSL"
+    echo -e "  [2] LibreSSL\n"
+    while [[ "$SSL_LIB_CHOICE" != "1" && "$SSL_LIB_CHOICE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r SSL_LIB_CHOICE
+      case "${SSL_LIB_CHOICE}" in
         [1]* )
           ;;
         [2]* )
           ;;
         * )
-          OPENSSL_LIB="1"
+          SSL_LIB_CHOICE="1"
           ;;
       esac
     done
+    if [ "$SSL_LIB_CHOICE" = "1" ]; then
+      echo -e "\nWhat OpenSSL release do you want ?"
+      echo -e "  [1] OpenSSL stable $OPENSSL_VER"
+      echo -e "  [2] OpenSSL from system lib\n"
+      while [[ "$OPENSSL_LIB" != "1" && "$OPENSSL_LIB" != "2" ]]; do
+        echo -ne "Select an option (1-2) [1]: " && read -r OPENSSL_LIB
+        case "${OPENSSL_LIB}" in
+          [1]* )
+            ;;
+          [2]* )
+            ;;
+          * )
+            OPENSSL_LIB="1"
+            ;;
+        esac
+      done
+    fi
   fi
 
   echo -e "\n\n\nNginx Modules Selection :"
-
   while [[ "$PAGESPEED" != "y" && "$PAGESPEED" != "n" ]]; do
     echo -ne "\nDo you want Pagespeed ? (Y/n) [Y]: " && read -r PAGESPEED
     case "${PAGESPEED}" in
@@ -206,162 +227,341 @@ if [ "$INTERACTIVE" = true ]; then
           ;;
       esac
     done
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$PAGESPEED_COMPILE" != "1" && "$PAGESPEED_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r PAGESPEED_COMPILE
+      case "${PAGESPEED_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          PAGESPEED_COMPILE="1"
+          ;;
+      esac
+    done
   fi
 
-  while [[ "$BROTLI" != "y" && "$BROTLI" != "n" ]]; do
+  while [[ "$BROTLI" != true && "$BROTLI" != false ]]; do
     echo -ne "\nDo you want Brotli ? (Y/n) [Y]: " && read -r BROTLI
     case "${BROTLI}" in
       [Yy]* )
-        BROTLI="y"
+        BROTLI=true
         ;;
       [Nn]* )
-        BROTLI="n"
+        BROTLI=false
         ;;
       * )
-        BROTLI="y"
+        BROTLI=true
         ;;
     esac
   done
+  if [ "$BROTLI" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$BROTLI_COMPILE" != "1" && "$BROTLI_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r BROTLI_COMPILE
+      case "${BROTLI_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          BROTLI_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$HEADERS_MORE" != "y" && "$HEADERS_MORE" != "n" ]]; do
+  while [[ "$HEADERS_MORE" != true && "$HEADERS_MORE" != false ]]; do
     echo -ne "\nDo you want Headers More ? (Y/n) [Y]: " && read -r HEADERS_MORE
     case "${HEADERS_MORE}" in
       [Yy]* )
-        HEADERS_MORE="y"
+        HEADERS_MORE=true
         ;;
       [Nn]* )
-        HEADERS_MORE="n"
+        HEADERS_MORE=false
         ;;
       * )
-        HEADERS_MORE="y"
+        HEADERS_MORE=true
         ;;
     esac
   done
+  if [ "$HEADERS_MORE" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$HEADERS_MORE_COMPILE" != "1" && "$HEADERS_MORE_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r HEADERS_MORE_COMPILE
+      case "${HEADERS_MORE_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          HEADERS_MORE_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$CACHE_PURGE" != "y" && "$CACHE_PURGE" != "n" ]]; do
+  while [[ "$CACHE_PURGE" != true && "$CACHE_PURGE" != false ]]; do
     echo -ne "\nDo you want Cache Purge ? (Y/n) [Y]: " && read -r CACHE_PURGE
     case "${CACHE_PURGE}" in
       [Yy]* )
-        CACHE_PURGE="y"
+        CACHE_PURGE=true
         ;;
       [Nn]* )
-        CACHE_PURGE="n"
+        CACHE_PURGE=false
         ;;
       * )
-        CACHE_PURGE="y"
+        CACHE_PURGE=true
         ;;
     esac
   done
+  if [ "$CACHE_PURGE" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$CACHE_PURGE_COMPILE" != "1" && "$CACHE_PURGE_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r CACHE_PURGE_COMPILE
+      case "${CACHE_PURGE_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          CACHE_PURGE_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$VTS" != "y" && "$VTS" != "n" ]]; do
+  while [[ "$VTS" != true && "$VTS" != false ]]; do
     echo -ne "\nDo you want Virtual Host Traffic Status ? (Y/n) [Y]: " && read -r VTS
     case "${VTS}" in
       [Yy]* )
-        VTS="y"
+        VTS=true
         ;;
       [Nn]* )
-        VTS="n"
+        VTS=false
         ;;
       * )
-        VTS="y"
+        VTS=true
         ;;
     esac
   done
+  if [ "$VTS" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$VTS_COMPILE" != "1" && "$VTS_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r VTS_COMPILE
+      case "${VTS_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          VTS_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$GEOIP2" != "y" && "$GEOIP2" != "n" ]]; do
+  while [[ "$GEOIP2" != true && "$GEOIP2" != false ]]; do
     echo -ne "\nDo you want GeoIP2 ? (Y/n) [Y]: " && read -r GEOIP2
     case "${GEOIP2}" in
       [Yy]* )
-        GEOIP2="y"
+        GEOIP2=true
         ;;
       [Nn]* )
-        GEOIP2="n"
+        GEOIP2=false
         ;;
       * )
-        GEOIP2="y"
+        GEOIP2=true
         ;;
     esac
   done
+  if [ "$GEOIP2" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$GEOIP2_COMPILE" != "1" && "$GEOIP2_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r GEOIP2_COMPILE
+      case "${GEOIP2_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          GEOIP2_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$ECHO" != "y" && "$ECHO" != "n" ]]; do
+  while [[ "$ECHO" != true && "$ECHO" != false ]]; do
     echo -ne "\nDo you want Echo ? (Y/n) [Y]: " && read -r ECHO
     case "${ECHO}" in
       [Yy]* )
-        ECHO="y"
+        ECHO=true
         ;;
       [Nn]* )
-        ECHO="n"
+        ECHO=false
         ;;
       * )
-        ECHO="y"
+        ECHO=true
         ;;
     esac
   done
+  if [ "$ECHO" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$ECHO_COMPILE" != "1" && "$ECHO_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r ECHO_COMPILE
+      case "${ECHO_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          ECHO_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$MODSECURITY" != "y" && "$MODSECURITY" != "n" ]]; do
+  while [[ "$MODSECURITY" != true && "$MODSECURITY" != false ]]; do
     echo -ne "\nDo you want ModSecurity ? (Y/n) [Y]: " && read -r MODSECURITY
     case "${MODSECURITY}" in
       [Yy]* )
-        MODSECURITY="y"
+        MODSECURITY=true
         ;;
       [Nn]* )
-        MODSECURITY="n"
+        MODSECURITY=false
         ;;
       * )
-        MODSECURITY="y"
+        MODSECURITY=true
         ;;
     esac
   done
+  if [ "$MODSECURITY" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$MODSECURITY_COMPILE" != "1" && "$MODSECURITY_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r MODSECURITY_COMPILE
+      case "${MODSECURITY_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          MODSECURITY_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$NAXSI" != "y" && "$NAXSI" != "n" ]]; do
+  while [[ "$NAXSI" != true && "$NAXSI" != false ]]; do
     echo -ne "\nDo you want NAXSI WAF (still experimental)? (Y/n) [Y]: " && read -r NAXSI
     case "${NAXSI}" in
       [Yy]* )
-        NAXSI="y"
+        NAXSI=true
         ;;
       [Nn]* )
-        NAXSI="n"
+        NAXSI=false
         ;;
       * )
-        NAXSI="y"
+        NAXSI=true
         ;;
     esac
   done
+  if [ "$NAXSI" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$NAXSI_COMPILE" != "1" && "$NAXSI_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r NAXSI_COMPILE
+      case "${NAXSI_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          NAXSI_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-  while [[ "$RTMP" != "y" && "$RTMP" != "n" ]]; do
+  while [[ "$RTMP" != true && "$RTMP" != false ]]; do
     echo -ne "\nDo you want RTMP streaming module (used for video streaming) ? (y/N) [N] : " && read -r RTMP
     case "${RTMP}" in
       [Yy]* )
-        RTMP="y"
+        RTMP=true
         ;;
       [Nn]* )
-        RTMP="n"
+        RTMP=false
         ;;
       * )
-        RTMP="n"
+        RTMP=false
         ;;
     esac
   done
-fi
+  if [ "$RTMP" = true ]; then
+    echo -e "\nCompile as Static or Dynamic module ?"
+    echo -e "  [1] Static"
+    echo -e "  [2] Dynamic\n"
+    while [[ "$RTMP_COMPILE" != "1" && "$RTMP_COMPILE" != "2" ]]; do
+      echo -ne "Select an option (1-2) [1]: " && read -r RTMP_COMPILE
+      case "${RTMP_COMPILE}" in
+        [1]* )
+          ;;
+        [2]* )
+          ;;
+        * )
+          RTMP_COMPILE="1"
+          ;;
+      esac
+    done
+  fi
 
-if [ "$DISTRO_CHOICE" = "1" ]; then
-  DISTRO_NAME="debian"
-  if [ "$DISTRO_VERSION" = "1" ]; then
-    DISTRO_CODENAME="bullseye"
-    DISTRO_VERSION="11.1"
-  else
-    DISTRO_CODENAME="buster"
-    DISTRO_VERSION="10.11"
-  fi
-else
-  DISTRO_NAME="ubuntu"
-  if [ "$DISTRO_VERSION" = "1" ]; then
-    DISTRO_CODENAME="focal"
-    DISTRO_VERSION="20.04"
-  else
-    DISTRO_CODENAME="bionic"
-    DISTRO_VERSION="18.04"
-  fi
+  echo -e "\n\n\nExtra's :"
+  while [[ "$USE_CUSTOM_PATCHES" != true && "$USE_CUSTOM_PATCHES" != false ]]; do
+    echo -ne "\nDo you want the nginx patches to be applied ? (Y/n) [Y] : " && read -r USE_CUSTOM_PATCHES
+    case "${USE_CUSTOM_PATCHES}" in
+      [Yy]* )
+        USE_CUSTOM_PATCHES=true
+        ;;
+      [Nn]* )
+        USE_CUSTOM_PATCHES=false
+        ;;
+      * )
+        USE_CUSTOM_PATCHES=true
+        ;;
+    esac
+  done
+
+  while [[ "$USE_CUSTOM_CONFIGS" != true && "$USE_CUSTOM_CONFIGS" != false ]]; do
+    echo -ne "\nDo you want the custom configs added to /etc/nginx ? (Y/n) [Y] : " && read -r USE_CUSTOM_CONFIGS
+    case "${USE_CUSTOM_CONFIGS}" in
+      [Yy]* )
+        USE_CUSTOM_CONFIGS=true
+        ;;
+      [Nn]* )
+        USE_CUSTOM_CONFIGS=false
+        ;;
+      * )
+        USE_CUSTOM_CONFIGS=true
+        ;;
+    esac
+  done
 fi
 
 if [ "$NGINX_RELEASE" = "2" ]; then
@@ -382,73 +582,6 @@ if [ "$SSL_LIB_CHOICE" = "1" ]; then
 else
   LIBRESSL=true
   LATEST_OPENSSL=false
-fi
-
-if [ "$PAGESPEED" = "y" ]; then
-  PAGESPEED=true
-  if [ "$PAGESPEED_RELEASE" = "1" ]; then
-    PAGESPEED_VERSION=v1.14.33.1-RC1
-    PSOL_VERSION=1.13.35.2-x64
-  else
-    PAGESPEED_VERSION=v1.13.35.2-stable
-    PSOL_VERSION=1.13.35.2-x64
-  fi
-else
-  PAGESPEED=false
-fi
-
-if [ "$BROTLI" = "y" ]; then
-  BROTLI=true
-else
-  BROTLI=false
-fi
-
-if [ "$HEADERS_MORE" = "y" ]; then
-  HEADERS_MORE=true
-else
-  HEADERS_MORE=false
-fi
-
-if [ "$CACHE_PURGE" = "y" ]; then
-  CACHE_PURGE=true
-else
-  CACHE_PURGE=false
-fi
-
-if [ "$VTS" = "y" ]; then
-  VTS=true
-else
-  VTS=false
-fi
-
-if [ "$GEOIP2" = "y" ]; then
-  GEOIP2=true
-else
-  GEOIP2=false
-fi
-
-if [ "$ECHO" = "y" ]; then
-  ECHO=true
-else
-  ECHO=false
-fi
-
-if [ "$MODSECURITY" = "y" ]; then
-  MODSECURITY=true
-else
-  MODSECURITY=false
-fi
-
-if [ "$NAXSI" = "y" ]; then
-  NAXSI=true
-else
-  NAXSI=false
-fi
-
-if [ "$RTMP" = "y" ]; then
-  RTMP=true
-else
-  RTMP=false
 fi
 
 
@@ -494,16 +627,13 @@ fi
 # Report any missing packages
 if [ ! -z "${missing_packages}" ]; then
   echo "Please install the following package(s) :${missing_packages}"
-  exit 0;
+  exit 1;
 fi
 
 # Module report
 modules_static=""
 modules_dynamic=""
 modules_disabled=""
-compile_pagespeed="No"
-compile_naxsi="No"
-compile_rtmp="No"
 for (( i = 0; i <= $package_counter; i++ ))
 do
   if [ "${Sources[$i,Install]}" = true ]; then
@@ -550,13 +680,17 @@ echo " Detected Arch : ${OS_ARCH}"
 echo " Logging in    : ${output_log}"
 echo ""
 echo -e "  - Nginx release : ${NGINX_VERSION}-${NGINX_SUBVERSION}"
-if [ "${LATEST_OPENSSL}" = true ]; then
-  echo -e "  - OpenSSL : ${OPENSSL_VERSION}"
+if [ "${BUILD_HTTP3}" = true ]; then
+  echo -e "  - SSL : BoringSSL (HTTP/3)"
 else
-  if [ "${LIBRESSL}" = true ]; then
-    echo -e "  - LibreSSL : ${LIBRESSL_VERSION}"
+  if [ "${LATEST_OPENSSL}" = true ]; then
+    echo -e "  - OpenSSL : ${OPENSSL_VERSION}"
   else
-    echo -e "  - OpenSSL : Distro Default"
+    if [ "${LIBRESSL}" = true ]; then
+      echo -e "  - LibreSSL : ${LIBRESSL_VERSION}"
+    else
+      echo -e "  - OpenSSL : Distro Default"
+    fi
   fi
 fi
 if [ "$PAGESPEED" = true ]; then
@@ -566,9 +700,19 @@ echo "  - Static modules :${modules_static}"
 echo "  - Dynamic modules :${modules_dynamic}"
 echo "  - Disabled modules :${modules_disabled}"
 echo ""
+if [ "${USE_CUSTOM_PATCHES}" = true ]; then
+  echo "  - Apply Patches : Yes"
+else
+  echo "  - Apply Patches : No"
+fi
+if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
+  echo "  - Add custom configs : Yes"
+else
+  echo "  - Add custom configs : No"
+fi
+echo -e "\n${CGREEN}##################################${CEND}\n"
+# exit 0;
 
-
-exit 0;
 
 ##################################
 # Fetch sources
