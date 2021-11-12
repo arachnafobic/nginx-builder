@@ -13,8 +13,11 @@
 
 # Test package
 apt-get -f install -y --no-install-recommends curl
-cd /output
-apt-get -f install -y --no-install-recommends ./nginx_*_amd64.deb
+mkdir -p /tmp
+cd /tmp
+cp /output/*.deb .
+rm *dbg*
+apt-get -f install -y --no-install-recommends ./nginx*_amd64.deb
 nginx -V
 /usr/sbin/nginx -t
 /usr/sbin/nginx && sleep 5

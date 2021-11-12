@@ -8,7 +8,7 @@ echo " -------------------------------------------------------------------------
 ##################################
 # Initialize
 ##################################
-if [[ "${LATEST_OPENSSL}" = true && "${LIBRESSL}" == true ]]; then
+if [[ "${LATEST_OPENSSL}" = true && "${LIBRESSL}" = true ]]; then
   echo "Both Latest OpenSSL and LibreSSL are set to true in the config, this is not possible to run."
   exit 1;
 fi
@@ -76,8 +76,6 @@ CEND="${CSI}0m"
 # Process Interactive
 ##################################
 if [ "$INTERACTIVE" = true ]; then
-  CHECKSUM_CHECKS=false
-
   echo -e "\nWhich Distro are you compiling Nginx for ?"
   echo -e "  [1] Debian"
   echo -e "  [2] Ubuntu\n"
@@ -634,6 +632,7 @@ fi
 modules_static=""
 modules_dynamic=""
 modules_disabled=""
+SETUP_DYNAMIC=false
 for (( i = 0; i <= $package_counter; i++ ))
 do
   if [ "${Sources[$i,Install]}" = true ]; then
@@ -658,6 +657,7 @@ if [ -z "${modules_dynamic}" ]; then
   modules_dynamic=" None"
 else
   modules_dynamic="${modules_dynamic::-1}"
+  SETUP_DYNAMIC=true
 fi
 if [ -z "${modules_disabled}" ]; then
   modules_disabled=" None"
@@ -763,17 +763,10 @@ do
           mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
         fi
       fi
-      if [ "${CHECKSUM_CHECKS}" = true ]; then
-        echo "${Sources[$i,DLSha256]}" "${Sources[$i,DLFinal]}" | sha256sum --check
-        if [ $? -ne 0 ]; then
-          fail "Checksum for ${Sources[$i,DLFinal]} did NOT match, aborting with return code $?"
-        fi
+      if [ ! -f "${Sources[$i,DLFinal]}" ]; then
+        fail "${Sources[$i,DLFinal]} was not found."
       else
-        if [ ! -f "${Sources[$i,DLFinal]}" ]; then
-          fail "${Sources[$i,DLFinal]} was not found."
-        else
-          echo "${Sources[$i,Package]} : Found." >>$output_log 2>&1
-        fi
+        echo "${Sources[$i,Package]} : Found." >>$output_log 2>&1
       fi
     fi
   fi
@@ -812,6 +805,14 @@ if [ "${BUILD_HTTP3}" = true ]; then
   rsync -r "${WORKPWD}/src/nginx-quic/" "${WORKPWD}/build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
 fi
 
+if [ "${SETUP_DYNAMIC}" = true ]; then
+  cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules"
+  wget https://hg.nginx.org/pkg-oss/raw-file/default/build_module.sh >>$output_log 2>&1
+  chmod a+x build_module.sh
+  touch build_modules.sh
+  chmod a+x build_modules.sh
+fi
+
 for (( i = 2; i <= $package_counter; i++ ))
 do
   if [ "${Sources[$i,Install]}" = true ]; then
@@ -826,8 +827,20 @@ do
       if [ "${Sources[$i,Package]}" = "Naxsi" ]; then
         # Naxsi has a different folder structure then other modules...
         sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module ${Sources[$i,ConfigureSwitch]}=\"\$(CURDIR)\/debian\/modules\/${Sources[$i,UnpackName]}\/naxsi_src\"/g" rules >>$output_log 2>&1
+        if [ "${Sources[$i,ConfigureSwitch]}" = "--add-dynamic-module" ]; then
+          echo "./build_module.sh -y -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/naxsi_src/" >> modules/build_modules.sh
+        fi
       else
         sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module ${Sources[$i,ConfigureSwitch]}=\"\$(CURDIR)\/debian\/modules\/${Sources[$i,UnpackName]}\"/g" rules >>$output_log 2>&1
+        if [ "${Sources[$i,ConfigureSwitch]}" = "--add-dynamic-module" ]; then
+          if [ "${Sources[$i,Package]}" = "Pagespeed" ]; then
+            echo "echo y|./build_module.sh -y -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/." >> modules/build_modules.sh
+          elif [[ "${Sources[$i,Package]}" = "Brotli" || "${Sources[$i,Package]}" = "Cache Purge" ]]; then
+            echo "./build_module.sh -y -f -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/." >> modules/build_modules.sh
+          else
+            echo "./build_module.sh -y -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/." >> modules/build_modules.sh
+          fi
+        fi
       fi
     fi
   fi
@@ -888,11 +901,21 @@ cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
 echo "/etc/nginx/sites-available" >> nginx.dirs
 echo "/etc/nginx/sites-enabled" >> nginx.dirs
 echo "/var/cache/nginx/pagespeed" >> nginx.dirs
+if [ "${SETUP_DYNAMIC}" = true ]; then
+  echo "/usr/share/nginx/modules" >> nginx.dirs
+  for (( i = 2; i <= $package_counter; i++ ))
+  do
+    if [ "${Sources[$i,ConfigureSwitch]}" = "--add-dynamic-module" ]; then
+      sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/module-${Sources[$i,Nickname]}.conf \$\(INSTALLDIR\)\/usr\/share\/nginx\/modules\/module-${Sources[$i,Nickname]}.conf" rules >>$output_log 2>&1
+      sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/module-${Sources[$i,Nickname]}.conf \$\(INSTALLDIR\)\/usr\/share\/nginx\/modules\/module-${Sources[$i,Nickname]}.conf" nginx.rules.in >>$output_log 2>&1
+    fi
+  done
+fi
+mkdir custom
+cp -f ${WORKPWD}/custom/configs/*.conf* custom/
 if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
   echo "/etc/nginx/conf.d/custom" >> nginx.dirs
   cp -f "${WORKPWD}/custom/configs/nginx.conf" "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/nginx.conf"
-  mkdir custom
-  cp -f ${WORKPWD}/custom/configs/*.conf* custom/
   for i in "${confs[@]}"
   do
     sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/$i \$\(INSTALLDIR\)\/etc\/nginx\/conf.d\/custom\/$i" rules >>$output_log 2>&1
@@ -933,6 +956,7 @@ else
 fi
 cd "${WORKPWD}"
 export BUILD_HTTP3
+export SETUP_DYNAMIC
 echo -ne "       Compiling nginx                        "
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output "build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
 if [ $? -ne 0 ]; then
@@ -947,10 +971,10 @@ if [ $? -ne 0 ]; then
 else
   echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 fi
-
 echo ""
 echo -e "${CGREEN}##################################${CEND}"
 echo " Result "
 ls -l output/
 echo -e "${CGREEN}##################################${CEND}"
 echo ""
+

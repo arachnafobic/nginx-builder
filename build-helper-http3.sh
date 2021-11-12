@@ -46,9 +46,16 @@ mk-build-deps -ir -t "apt-get -o Debug::pkgProblemResolver=yes -y --no-install-r
 # Build packages
 echo y|debuild -b -uc -us
 
+# Build dynamic modules if any
+cd /build/source/debian/modules
+if [ -f build_modules.sh ]; then
+  ./build_modules.sh
+fi
+cd /build/source
+
 # Copy packages to output dir with user's permissions
-chown -R $USER:$GROUP /build
 cp -a /build/*.deb /output/
+chown -R $USER:$GROUP /output/*.deb
 echo -e "\n"
 echo "Contents of output/ after build:"
 ls -l /output
