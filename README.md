@@ -39,6 +39,10 @@ Edit the config file and then run the full compile process with :
 ```bash
 $ ./nginx-build.sh
 ```
+or run the interactive mode :
+```bash
+$ ./nginx-build.sh -i
+```
 
 The resulting package can be installed using apt, it will pick it up as nginx and thus provide all normal dependencies.
 ```bash
