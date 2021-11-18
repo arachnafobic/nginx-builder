@@ -89,7 +89,7 @@ else
     PAGESPEED=true
     if [ "$PAGESPEED_RELEASE" = "1" ]; then
       PAGESPEED_VERSION=v1.14.33.1-RC1
-      PSOL_VERSION=1.13.35.2-x64
+      PSOL_VERSION=1.14.36.1
     else
       PAGESPEED_VERSION=v1.13.35.2-stable
       PSOL_VERSION=1.13.35.2-x64

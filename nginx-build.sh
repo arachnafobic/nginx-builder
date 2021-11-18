@@ -209,7 +209,7 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$PAGESPEED" = "y" ]; then
+  if [ "${PAGESPEED}" = "y" ]; then
     echo -e "\nWhat Pagespeed release do you want ?"
     echo -e "  [1] Beta Release"
     echo -e "  [2] Stable Release\n"
@@ -593,6 +593,24 @@ source ./config
 # clean previous install log
 echo "" >$output_log
 
+# Pagespeed Psol has different urls for versions passed 1.14.x
+if [ "${PAGESPEED}" = true ]; then
+  for (( i = 0; i <= $package_counter; i++ ))
+  do
+    if [ "${Sources[$i,Package]}" = "Pagespeed Psol" ]; then
+      if [ "${PAGESPEED_RELEASE}" = "1" ]; then
+        Sources[$i,DLFile]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
+        Sources[$i,DLUrl]="https://dist.apache.org/repos/dist/release/incubator/pagespeed/${PSOL_VERSION}/x64/psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
+        Sources[$i,DLFinal]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
+      else
+        Sources[$i,DLFile]="${PSOL_VERSION}.tar.gz"
+        Sources[$i,DLUrl]="https://dl.google.com/dl/page-speed/psol/${PSOL_VERSION}.tar.gz"
+        Sources[$i,DLFinal]="psol-${PSOL_VERSION}.tar.gz"
+      fi
+    fi
+  done
+fi
+
 # Ensure http3 uses the right ssl
 if [ "${BUILD_HTTP3}" = true ]; then
   for (( i = 0; i <= $package_counter; i++ ))
@@ -693,7 +711,7 @@ else
     fi
   fi
 fi
-if [ "$PAGESPEED" = true ]; then
+if [ "${PAGESPEED}" = true ]; then
   echo -e "  - Pagespeed : ${PAGESPEED_VERSION}"
 fi
 echo "  - Static modules :${modules_static}"
