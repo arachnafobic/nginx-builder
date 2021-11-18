@@ -5,7 +5,7 @@ echo "   Check for latest versions of Nginx, SSL libraries and modules   "
 echo " ----------------------------------------------------------------- "
 
 INTERACTIVE=false
-if [ ! -f "./config" ]; then
+if [[ ! -f ./config ]]; then
   echo "config file not found."
   exit 1;
 fi
@@ -50,9 +50,9 @@ CEND="${CSI}0m"
 ##################################
 echo -e "Nginx mainline : ${NGINX_MAINLINE}-${NGINX_MAINLINE_SUB} "
 echo -e "Nginx stable   : ${NGINX_STABLE}-${NGINX_STABLE_SUB} "
-if [ "${NGINX_VERSION:2:2}" = "20" ]; then
+if [[ ${NGINX_VERSION:2:2} = 20 ]]; then
   echo -ne "Config using stable : "
-  if [[ "${NGINX_VERSION}" = "${NGINX_STABLE}" && "${NGINX_STABLE_SUB}" = "${NGINX_SUBVERSION}" ]]; then
+  if [[ ${NGINX_VERSION} = ${NGINX_STABLE} && ${NGINX_STABLE_SUB} = ${NGINX_SUBVERSION} ]]; then
     echo -e "${CGREEN}${NGINX_VERSION}-${NGINX_SUBVERSION}${CEND}"
   else
     echo -e "${CRED}${NGINX_VERSION}-${NGINX_SUBVERSION}${CEND}"
@@ -60,7 +60,7 @@ if [ "${NGINX_VERSION:2:2}" = "20" ]; then
   fi
 else
   echo -ne "Config using mainline : "
-  if [[ "${NGINX_VERSION}" = "${NGINX_MAINLINE}" && "${NGINX_MAINLINE_SUB}" = "${NGINX_SUBVERSION}" ]]; then
+  if [[ ${NGINX_VERSION} = ${NGINX_MAINLINE} && ${NGINX_MAINLINE_SUB} = ${NGINX_SUBVERSION} ]]; then
     echo -e "${CGREEN}${NGINX_VERSION}-${NGINX_SUBVERSION}${CEND}"
   else
     echo -e "${CRED}${NGINX_VERSION}-${NGINX_SUBVERSION}${CEND}"
@@ -70,12 +70,12 @@ fi
 echo -e "\nOpenSSL 1.x series : ${OPENSSL_1X}"
 echo -e "OpenSSL 3.x series : ${OPENSSL_3X} (don't use yet)"
 echo -e "LibreSSL : ${LIBRESSL_3X}"
-if [ "${LATEST_OPENSSL}" = false ]; then
+if [[ ${LATEST_OPENSSL} = false ]]; then
   echo -e "Config using System Default"
 else
-  if [ "${LIBRESSL}" = false ]; then
+  if [[ ${LIBRESSL} = false ]]; then
     echo -ne "Config using OpenSSL 1.x : "
-    if [ "${OPENSSL_1X}" = "${OPENSSL_VERSION}" ]; then
+    if [[ ${OPENSSL_1X} = ${OPENSSL_VERSION} ]]; then
       echo -e "${CGREEN}${OPENSSL_VERSION}${CEND}"
     else
       echo -e "${CRED}${OPENSSL_VERSION}${CEND}"
@@ -83,7 +83,7 @@ else
     fi
   else
     echo -ne "Config using LibreSSL : "
-    if [ "${LIBRESSL_3X}"] = "${LIBRESSL_VERSION}" ]; then
+    if [[ ${LIBRESSL_3X} = ${LIBRESSL_VERSION} ]]; then
       echo -e "${CGREEN}${LIBRESSL_VERSION}${CEND}"
     else
       echo -e "${CRED}${LIBRESSL_VERSION}${CEND}"
@@ -93,9 +93,9 @@ else
 fi
 echo -e "\nPagespeed Stable : ${PAGESPEED_STABLE}"
 echo -e "Pagespeed Beta/RC : ${PAGESPEED_BETA} (requires url swapping in the config, comments are present for it.)"
-if [ "${PAGESPEED_STABLE}" = "${PAGESPEED_VERSION}" ]; then
+if [[ ${PAGESPEED_STABLE} = ${PAGESPEED_VERSION} ]]; then
   echo -e "Config using Stable : ${CGREEN}${PAGESPEED_VERSION}${CEND}"
-elif [ "${PAGESPEED_BETA}" = "${PAGESPEED_VERSION}" ]; then
+elif [[ ${PAGESPEED_BETA} = ${PAGESPEED_VERSION} ]]; then
   echo -e "Config using Beta : ${CGREEN}${PAGESPEED_VERSION}${CEND}"
 else
   echo -e "Config using : ${CRED}${PAGESPEED_VERSION}${CEND}"
@@ -104,63 +104,63 @@ fi
 echo -ne "\nModules:\n"
 echo -e "               Latest - Config"
 echo -ne "Headers more : "
-if [ "${HEADERS_MORE_TAGS}" = "${HEADERS_MORE_VERSION}" ]; then
+if [[ ${HEADERS_MORE_TAGS} = ${HEADERS_MORE_VERSION} ]]; then
   echo -e "${HEADERS_MORE_TAGS} - ${CGREEN}${HEADERS_MORE_VERSION}${CEND}"
 else
   echo -e "${HEADERS_MORE_TAGS} - ${CRED}${HEADERS_MORE_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 echo -ne "Cache purge  : "
-if [ "${CACHE_PURGE_TAGS}" = "${CACHE_PURGE_VERSION}" ]; then
+if [[ ${CACHE_PURGE_TAGS} = ${CACHE_PURGE_VERSION} ]]; then
   echo -e "${CACHE_PURGE_TAGS} - ${CGREEN}${CACHE_PURGE_VERSION}${CEND}"
 else
   echo -e "${CACHE_PURGE_TAGS} - ${CRED}${CACHE_PURGE_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 echo -ne "VTS          : "
-if [ "${VTS_TAGS}" = "${VTS_VERSION}" ]; then
+if [[ ${VTS_TAGS} = ${VTS_VERSION} ]]; then
   echo -e "${VTS_TAGS} - ${CGREEN}${VTS_VERSION}${CEND}"
 else
   echo -e "${VTS_TAGS} - ${CRED}${VTS_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 echo -ne "GeoIP2       : "
-if [ "${GEOIP2_TAGS}" = "${GEOIP2_VERSION}" ]; then
+if [[ ${GEOIP2_TAGS} = ${GEOIP2_VERSION} ]]; then
   echo -e "${GEOIP2_TAGS} - ${CGREEN}${GEOIP2_VERSION}${CEND}"
 else
   echo -e "${GEOIP2_TAGS} - ${CRED}${GEOIP2_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 echo -ne "Echo         : "
-if [ "${ECHO_TAGS}" = "${ECHO_VERSION}" ]; then
+if [[ ${ECHO_TAGS} = ${ECHO_VERSION} ]]; then
   echo -e "${ECHO_TAGS} - ${CGREEN}${ECHO_VERSION}${CEND}"
 else
   echo -e "${ECHO_TAGS} - ${CRED}${ECHO_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 echo -ne "ModSecurity  : "
-if [ "${MODSEC_TAGS}" = "${MODSECURITY_VERSION}" ]; then
+if [[ ${MODSEC_TAGS} = ${MODSECURITY_VERSION} ]]; then
   echo -e "${MODSEC_TAGS} - ${CGREEN}${MODSECURITY_VERSION}${CEND}"
 else
   echo -e "${MODSEC_TAGS} - ${CRED}${MODSECURITY_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 echo -ne "Naxsi        : "
-if [ "${NAXSI_TAGS}" = "${NAXSI_VERSION}" ]; then
+if [[ ${NAXSI_TAGS} = ${NAXSI_VERSION} ]]; then
   echo -e "${NAXSI_TAGS} - ${CGREEN}${NAXSI_VERSION}${CEND}"
 else
   echo -e "${NAXSI_TAGS} - ${CRED}${NAXSI_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 echo -ne "RTMP         : "
-if [ "${RTMP_TAGS}" = "${RTMP_VERSION}" ]; then
+if [[ ${RTMP_TAGS} = ${RTMP_VERSION} ]]; then
   echo -e "${RTMP_TAGS} - ${CGREEN}${RTMP_VERSION}${CEND}"
 else
   echo -e "${RTMP_TAGS} - ${CRED}${RTMP_VERSION}${CEND}"
   NEEDEDIT=true
 fi
 
-if [ "${NEEDEDIT}" = true ]; then
+if [[ ${NEEDEDIT} = true ]]; then
   echo -ne "\n\nConfig needs editing to update the versions above in red\n\n"
 else
   echo -ne "\n\nConfig containing all the latest versions\n\n"
