@@ -24,8 +24,8 @@ cmake ../
 make -j 8
 
 # ModSecurity doesn't have packages for ubuntu below 20.04
-if [ `lsb_release -is` == "Ubuntu" ]; then
-  if [ `lsb_release -rs` != "20.04" ]; then
+if [[ `lsb_release -is` == Ubuntu ]]; then
+  if [[ `lsb_release -rs` != 20.04 ]]; then
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity /usr/local/src/ModSecurity/
     cd /usr/local/src/ModSecurity/
     git submodule init
@@ -48,7 +48,7 @@ echo y|debuild -b -uc -us
 
 # Build dynamic modules if any
 cd /build/source/debian/modules
-if [ -f build_modules.sh ]; then
+if [[ -f ./build_modules.sh ]]; then
   ./build_modules.sh
 fi
 cd /build/source

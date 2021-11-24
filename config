@@ -1,9 +1,11 @@
+#!/bin/bash
+
 declare -A Sources
 declare -i package_counter
 
 output_log=/tmp/nginx-builder.log
 
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   # Distro info in all lowercase
   # Be aware off the fact that nginx only supplies downloads for the "debian" folder for the latest distro releases when a new nginx version is released
   # So for example, nginx 1.21.3 only has these downloads for debian 10 (buster) and 11 (bullseye) or ubuntu 18 (bionic), 20 (focal) and 22 (hirsute)
@@ -65,9 +67,9 @@ if [ "$INTERACTIVE" = false ]; then
   PSOL_VERSION=1.13.35.2-x64
   #PSOL_VERSION=1.14.36.1
 else
-  if [ "$DISTRO_CHOICE" = "1" ]; then
+  if [[ ${DISTRO_CHOICE} = 1 ]]; then
     DISTRO_NAME="debian"
-    if [ "$DISTRO_VERSION" = "1" ]; then
+    if [[ ${DISTRO_VERSION} = 1 ]]; then
       DISTRO_CODENAME="bullseye"
       DISTRO_VERSION="11.1"
     else
@@ -76,7 +78,7 @@ else
     fi
   else
     DISTRO_NAME="ubuntu"
-    if [ "$DISTRO_VERSION" = "1" ]; then
+    if [[ ${DISTRO_VERSION} = 1 ]]; then
       DISTRO_CODENAME="focal"
       DISTRO_VERSION="20.04"
     else
@@ -85,9 +87,9 @@ else
     fi
   fi
 
-  if [ "$PAGESPEED" = "y" ]; then
+  if [[ ${PAGESPEED} = y ]]; then
     PAGESPEED=true
-    if [ "$PAGESPEED_RELEASE" = "1" ]; then
+    if [[ ${PAGESPEED_RELEASE} = 1 ]]; then
       PAGESPEED_VERSION=v1.14.33.1-RC1
       PSOL_VERSION=1.14.36.1
     else
@@ -189,11 +191,11 @@ Sources[$package_counter,DLFinal]="pagespeed-${PAGESPEED_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="incubator-pagespeed-ngx-${PAGESPEED_VERSION:1}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$PAGESPEED_COMPILE" = "1" ]; then
+  if [[ ${PAGESPEED_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -229,11 +231,11 @@ Sources[$package_counter,DLFinal]="headers-more-v${HEADERS_MORE_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="headers-more-nginx-module-${HEADERS_MORE_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$HEADERS_MORE_COMPILE" = "1" ]; then
+  if [[ ${HEADERS_MORE_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -252,11 +254,11 @@ Sources[$package_counter,DLFinal]="cache-purge-${CACHE_PURGE_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="ngx_cache_purge-${CACHE_PURGE_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$CACHE_PURGE_COMPILE" = "1" ]; then
+  if [[ ${CACHE_PURGE_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -275,11 +277,11 @@ Sources[$package_counter,DLFinal]="vts-v${VTS_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="nginx-module-vts-${VTS_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$VTS_COMPILE" = "1" ]; then
+  if [[ ${VTS_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -298,11 +300,11 @@ Sources[$package_counter,DLFinal]="geoip2-${GEOIP2_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="ngx_http_geoip2_module-${GEOIP2_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$GEOIP2_COMPILE" = "1" ]; then
+  if [[ ${GEOIP2_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -321,11 +323,11 @@ Sources[$package_counter,DLFinal]="echo-v${ECHO_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="echo-nginx-module-${ECHO_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$ECHO_COMPILE" = "1" ]; then
+  if [[ ${ECHO_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -344,11 +346,11 @@ Sources[$package_counter,DLFinal]="modsecurity-nginx-v${MODSECURITY_VERSION}.tar
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="modsecurity-nginx-v${MODSECURITY_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$MODSECURITY_COMPILE" = "1" ]; then
+  if [[ ${MODSECURITY_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -367,11 +369,11 @@ Sources[$package_counter,DLFinal]="naxsi-${NAXSI_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="naxsi-${NAXSI_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$NAXSI_COMPILE" = "1" ]; then
+  if [[ ${NAXSI_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -390,11 +392,11 @@ Sources[$package_counter,DLFinal]="rtmp-v${RTMP_VERSION}.tar.gz"
 Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="nginx-rtmp-module-${RTMP_VERSION}"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$RTMP_COMPILE" = "1" ]; then
+  if [[ ${RTMP_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
@@ -413,11 +415,11 @@ Sources[$package_counter,DLFinal]="ngx_brotli"
 Sources[$package_counter,Git]=true
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="ngx_brotli"
-if [ "$INTERACTIVE" = false ]; then
+if [[ ${INTERACTIVE} = false ]]; then
   Sources[$package_counter,ConfigureSwitch]="--add-module"
   #Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"
 else
-  if [ "$BROTLI_COMPILE" = "1" ]; then
+  if [[ ${BROTLI_COMPILE} = 1 ]]; then
     Sources[$package_counter,ConfigureSwitch]="--add-module"
   else
     Sources[$package_counter,ConfigureSwitch]="--add-dynamic-module"

@@ -69,8 +69,8 @@ if [[ "$depdir" ]]; then
     docker_args+="-v $(abspath "$depdir"):/dependencies:ro "
 fi
 
-if [ -z "$testpack" ]; then
-  if [ "${BUILD_HTTP3}" = true ]; then
+if [[ -z "$testpack" ]]; then
+  if [[ ${BUILD_HTTP3} = true ]]; then
     docker_args+="-v $(abspath "$srcdir"):/source-ro:ro -v $(abspath "$outdir"):/output -v $(cd $PROG_DIR; pwd)/build-helper-http3.sh:/build-helper-http3.sh:ro "
   else
     docker_args+="-v $(abspath "$srcdir"):/source-ro:ro -v $(abspath "$outdir"):/output -v $(cd $PROG_DIR; pwd)/build-helper.sh:/build-helper.sh:ro "
@@ -88,8 +88,8 @@ docker_args+="-e USER=$(id -u) -e GROUP=$(id -g) "
 # for debugging
 docker_args+="--rm "
 
-if [ -z "$testpack" ]; then
-  if [ "${BUILD_HTTP3}" = true ]; then
+if [[ -z "$testpack" ]]; then
+  if [[ ${BUILD_HTTP3} = true ]]; then
     cmd="docker run -it $docker_args $image /build-helper-http3.sh"
   else
     cmd="docker run -it $docker_args $image /build-helper.sh"

@@ -8,7 +8,7 @@ echo " -------------------------------------------------------------------------
 ##################################
 # Initialize
 ##################################
-if [[ "${LATEST_OPENSSL}" = true && "${LIBRESSL}" = true ]]; then
+if [[ ${LATEST_OPENSSL} = true && ${LIBRESSL} = true ]]; then
   echo "Both Latest OpenSSL and LibreSSL are set to true in the config, this is not possible to run."
   exit 1;
 fi
@@ -41,7 +41,7 @@ fail() {
 }
 
 INTERACTIVE=false
-while [ "$#" -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
     case "$1" in
     -i | --interactive)
         INTERACTIVE=true
@@ -68,6 +68,7 @@ eval NGINX_STABLE_SUB="\$(curl -sL http://nginx.org/packages/ubuntu/pool/nginx/n
 # Colors
 CSI='\033['
 CRED="${CSI}1;31m"
+CORANGE="${CSI}1;33m"
 CGREEN="${CSI}1;32m"
 CEND="${CSI}0m"
 
@@ -75,11 +76,11 @@ CEND="${CSI}0m"
 ##################################
 # Process Interactive
 ##################################
-if [ "$INTERACTIVE" = true ]; then
+if [[ ${INTERACTIVE} = true ]]; then
   echo -e "\nWhich Distro are you compiling Nginx for ?"
   echo -e "  [1] Debian"
   echo -e "  [2] Ubuntu\n"
-  while [[ "$DISTRO_CHOICE" != "1" && "$DISTRO_CHOICE" != "2" ]]; do
+  while [[ ${DISTRO_CHOICE} != 1 && ${DISTRO_CHOICE} != 2 ]]; do
     echo -ne "Select an option (1-2) [2]: " && read -r DISTRO_CHOICE
     case "${DISTRO_CHOICE}" in
       [1]* )
@@ -91,11 +92,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$DISTRO_CHOICE" = "1" ]; then
+  if [[ ${DISTRO_CHOICE} = 1 ]]; then
     echo -e "\nWhich version of Debian ?"
     echo -e "  [1] Debian 11 bullseye (11.1)"
     echo -e "  [2] Debian 10 buster (10.11)\n"
-    while [[ "$DISTRO_VERSION" != "1" && "$DISTRO_VERSION" != "2" ]]; do
+    while [[ ${DISTRO_VERSION} != 1 && ${DISTRO_VERSION} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r DISTRO_VERSION
       case "${DISTRO_VERSION}" in
         [1]* )
@@ -111,7 +112,7 @@ if [ "$INTERACTIVE" = true ]; then
     echo -e "\nWhich version of Ubuntu ?"
     echo -e "  [1] Ubuntu 20.04 Focal Fossa"
     echo -e "  [2] Ubuntu 18.04 Bionic Beaver\n"
-    while [[ "$DISTRO_VERSION" != "1" && "$DISTRO_VERSION" != "2" ]]; do
+    while [[ ${DISTRO_VERSION} != 1 && ${DISTRO_VERSION} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r DISTRO_VERSION
       case "${DISTRO_VERSION}" in
         [1]* )
@@ -128,7 +129,7 @@ if [ "$INTERACTIVE" = true ]; then
   echo -e "\nWhich Nginx would you like to compile ?"
   echo -e "  [1] Mainline v${NGINX_MAINLINE}-${NGINX_MAINLINE_SUB}"
   echo -e "  [2] Stable v${NGINX_STABLE}-${NGINX_STABLE_SUB}\n"
-  while [[ "$NGINX_RELEASE" != "1" && "$NGINX_RELEASE" != "2" ]]; do
+  while [[ ${NGINX_RELEASE} != 1 && ${NGINX_RELEASE} != 2 ]]; do
     echo -ne "Select an option (1-2) [1]: " && read -r NGINX_RELEASE
     case "${NGINX_RELEASE}" in
       [1]* )
@@ -144,7 +145,7 @@ if [ "$INTERACTIVE" = true ]; then
   echo -e "\nDo you want to compile Nginx with HTTP/3 support ? (This will default SSL to BoringSSL)"
   echo -e "  [1] Without HTTP/3 support"
   echo -e "  [2] With HTTP/3 support\n"
-  while [[ "$BUILD_HTTP3" != true && "$BUILD_HTTP3" != false ]]; do
+  while [[ ${BUILD_HTTP3} != true && ${BUILD_HTTP3} != false ]]; do
     echo -ne "Select an option (1-2) [1]: " && read -r BUILD_HTTP3
     case "${BUILD_HTTP3}" in
       [1]* )
@@ -159,11 +160,11 @@ if [ "$INTERACTIVE" = true ]; then
     esac
   done
 
-  if [ "${BUILD_HTTP3}" = false ]; then
+  if [[ ${BUILD_HTTP3} = false ]]; then
     echo -e "\nWhich SSL library do you prefer to compile Nginx with ?"
     echo -e "  [1] OpenSSL"
     echo -e "  [2] LibreSSL\n"
-    while [[ "$SSL_LIB_CHOICE" != "1" && "$SSL_LIB_CHOICE" != "2" ]]; do
+    while [[ ${SSL_LIB_CHOICE} != 1 && ${SSL_LIB_CHOICE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r SSL_LIB_CHOICE
       case "${SSL_LIB_CHOICE}" in
         [1]* )
@@ -175,11 +176,11 @@ if [ "$INTERACTIVE" = true ]; then
           ;;
       esac
     done
-    if [ "$SSL_LIB_CHOICE" = "1" ]; then
+    if [[ ${SSL_LIB_CHOICE} = 1 ]]; then
       echo -e "\nWhat OpenSSL release do you want ?"
       echo -e "  [1] OpenSSL stable $OPENSSL_VER"
       echo -e "  [2] OpenSSL from system lib\n"
-      while [[ "$OPENSSL_LIB" != "1" && "$OPENSSL_LIB" != "2" ]]; do
+      while [[ ${OPENSSL_LIB} != 1 && ${OPENSSL_LIB} != 2 ]]; do
         echo -ne "Select an option (1-2) [1]: " && read -r OPENSSL_LIB
         case "${OPENSSL_LIB}" in
           [1]* )
@@ -195,7 +196,7 @@ if [ "$INTERACTIVE" = true ]; then
   fi
 
   echo -e "\n\n\nNginx Modules Selection :"
-  while [[ "$PAGESPEED" != "y" && "$PAGESPEED" != "n" ]]; do
+  while [[ ${PAGESPEED} != y && ${PAGESPEED} != n ]]; do
     echo -ne "\nDo you want Pagespeed ? (Y/n) [Y]: " && read -r PAGESPEED
     case "${PAGESPEED}" in
       [Yy]* )
@@ -209,11 +210,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "${PAGESPEED}" = "y" ]; then
+  if [[ ${PAGESPEED} = y ]]; then
     echo -e "\nWhat Pagespeed release do you want ?"
     echo -e "  [1] Beta Release"
     echo -e "  [2] Stable Release\n"
-    while [[ "$PAGESPEED_RELEASE" != "1" && "$PAGESPEED_RELEASE" != "2" ]]; do
+    while [[ ${PAGESPEED_RELEASE} != 1 && ${PAGESPEED_RELEASE} != 2 ]]; do
       echo -ne "Select an option (1-2) [2]: " && read -r PAGESPEED_RELEASE
       case "${PAGESPEED_RELEASE}" in
         [1]* )
@@ -228,7 +229,7 @@ if [ "$INTERACTIVE" = true ]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$PAGESPEED_COMPILE" != "1" && "$PAGESPEED_COMPILE" != "2" ]]; do
+    while [[ ${PAGESPEED_COMPILE} != 1 && ${PAGESPEED_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r PAGESPEED_COMPILE
       case "${PAGESPEED_COMPILE}" in
         [1]* )
@@ -242,7 +243,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$BROTLI" != true && "$BROTLI" != false ]]; do
+  while [[ ${BROTLI} != true && ${BROTLI} != false ]]; do
     echo -ne "\nDo you want Brotli ? (Y/n) [Y]: " && read -r BROTLI
     case "${BROTLI}" in
       [Yy]* )
@@ -256,11 +257,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$BROTLI" = true ]; then
+  if [[ ${BROTLI} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$BROTLI_COMPILE" != "1" && "$BROTLI_COMPILE" != "2" ]]; do
+    while [[ ${BROTLI_COMPILE} != 1 && ${BROTLI_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r BROTLI_COMPILE
       case "${BROTLI_COMPILE}" in
         [1]* )
@@ -274,7 +275,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$HEADERS_MORE" != true && "$HEADERS_MORE" != false ]]; do
+  while [[ ${HEADERS_MORE} != true && ${HEADERS_MORE} != false ]]; do
     echo -ne "\nDo you want Headers More ? (Y/n) [Y]: " && read -r HEADERS_MORE
     case "${HEADERS_MORE}" in
       [Yy]* )
@@ -288,11 +289,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$HEADERS_MORE" = true ]; then
+  if [[ ${HEADERS_MORE} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$HEADERS_MORE_COMPILE" != "1" && "$HEADERS_MORE_COMPILE" != "2" ]]; do
+    while [[ ${HEADERS_MORE_COMPILE} != 1 && ${HEADERS_MORE_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r HEADERS_MORE_COMPILE
       case "${HEADERS_MORE_COMPILE}" in
         [1]* )
@@ -306,7 +307,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$CACHE_PURGE" != true && "$CACHE_PURGE" != false ]]; do
+  while [[ ${CACHE_PURGE} != true && ${CACHE_PURGE} != false ]]; do
     echo -ne "\nDo you want Cache Purge ? (Y/n) [Y]: " && read -r CACHE_PURGE
     case "${CACHE_PURGE}" in
       [Yy]* )
@@ -320,11 +321,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$CACHE_PURGE" = true ]; then
+  if [[ ${CACHE_PURGE} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$CACHE_PURGE_COMPILE" != "1" && "$CACHE_PURGE_COMPILE" != "2" ]]; do
+    while [[ ${CACHE_PURGE_COMPILE} != 1 && ${CACHE_PURGE_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r CACHE_PURGE_COMPILE
       case "${CACHE_PURGE_COMPILE}" in
         [1]* )
@@ -338,7 +339,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$VTS" != true && "$VTS" != false ]]; do
+  while [[ ${VTS} != true && ${VTS} != false ]]; do
     echo -ne "\nDo you want Virtual Host Traffic Status ? (Y/n) [Y]: " && read -r VTS
     case "${VTS}" in
       [Yy]* )
@@ -352,11 +353,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$VTS" = true ]; then
+  if [[ ${VTS} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$VTS_COMPILE" != "1" && "$VTS_COMPILE" != "2" ]]; do
+    while [[ ${VTS_COMPILE} != 1 && ${VTS_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r VTS_COMPILE
       case "${VTS_COMPILE}" in
         [1]* )
@@ -370,7 +371,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$GEOIP2" != true && "$GEOIP2" != false ]]; do
+  while [[ ${GEOIP2} != true && ${GEOIP2} != false ]]; do
     echo -ne "\nDo you want GeoIP2 ? (Y/n) [Y]: " && read -r GEOIP2
     case "${GEOIP2}" in
       [Yy]* )
@@ -384,11 +385,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$GEOIP2" = true ]; then
+  if [[ ${GEOIP2} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$GEOIP2_COMPILE" != "1" && "$GEOIP2_COMPILE" != "2" ]]; do
+    while [[ ${GEOIP2_COMPILE} != 1 && ${GEOIP2_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r GEOIP2_COMPILE
       case "${GEOIP2_COMPILE}" in
         [1]* )
@@ -402,7 +403,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$ECHO" != true && "$ECHO" != false ]]; do
+  while [[ ${ECHO} != true && ${ECHO} != false ]]; do
     echo -ne "\nDo you want Echo ? (Y/n) [Y]: " && read -r ECHO
     case "${ECHO}" in
       [Yy]* )
@@ -416,11 +417,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$ECHO" = true ]; then
+  if [[ ${ECHO} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$ECHO_COMPILE" != "1" && "$ECHO_COMPILE" != "2" ]]; do
+    while [[ ${ECHO_COMPILE} != 1 && ${ECHO_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r ECHO_COMPILE
       case "${ECHO_COMPILE}" in
         [1]* )
@@ -434,7 +435,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$MODSECURITY" != true && "$MODSECURITY" != false ]]; do
+  while [[ ${MODSECURITY} != true && ${MODSECURITY} != false ]]; do
     echo -ne "\nDo you want ModSecurity ? (Y/n) [Y]: " && read -r MODSECURITY
     case "${MODSECURITY}" in
       [Yy]* )
@@ -448,11 +449,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$MODSECURITY" = true ]; then
+  if [[ ${MODSECURITY} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$MODSECURITY_COMPILE" != "1" && "$MODSECURITY_COMPILE" != "2" ]]; do
+    while [[ ${MODSECURITY_COMPILE} != 1 && ${MODSECURITY_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r MODSECURITY_COMPILE
       case "${MODSECURITY_COMPILE}" in
         [1]* )
@@ -466,7 +467,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$NAXSI" != true && "$NAXSI" != false ]]; do
+  while [[ ${NAXSI} != true && ${NAXSI} != false ]]; do
     echo -ne "\nDo you want NAXSI WAF (still experimental)? (Y/n) [Y]: " && read -r NAXSI
     case "${NAXSI}" in
       [Yy]* )
@@ -480,11 +481,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$NAXSI" = true ]; then
+  if [[ ${NAXSI} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$NAXSI_COMPILE" != "1" && "$NAXSI_COMPILE" != "2" ]]; do
+    while [[ ${NAXSI_COMPILE} != 1 && ${NAXSI_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r NAXSI_COMPILE
       case "${NAXSI_COMPILE}" in
         [1]* )
@@ -498,7 +499,7 @@ if [ "$INTERACTIVE" = true ]; then
     done
   fi
 
-  while [[ "$RTMP" != true && "$RTMP" != false ]]; do
+  while [[ ${RTMP} != true && ${RTMP} != false ]]; do
     echo -ne "\nDo you want RTMP streaming module (used for video streaming) ? (y/N) [N] : " && read -r RTMP
     case "${RTMP}" in
       [Yy]* )
@@ -512,11 +513,11 @@ if [ "$INTERACTIVE" = true ]; then
         ;;
     esac
   done
-  if [ "$RTMP" = true ]; then
+  if [[ ${RTMP} = true ]]; then
     echo -e "\nCompile as Static or Dynamic module ?"
     echo -e "  [1] Static"
     echo -e "  [2] Dynamic\n"
-    while [[ "$RTMP_COMPILE" != "1" && "$RTMP_COMPILE" != "2" ]]; do
+    while [[ ${RTMP_COMPILE} != 1 && ${RTMP_COMPILE} != 2 ]]; do
       echo -ne "Select an option (1-2) [1]: " && read -r RTMP_COMPILE
       case "${RTMP_COMPILE}" in
         [1]* )
@@ -531,7 +532,7 @@ if [ "$INTERACTIVE" = true ]; then
   fi
 
   echo -e "\n\n\nExtra's :"
-  while [[ "$USE_CUSTOM_PATCHES" != true && "$USE_CUSTOM_PATCHES" != false ]]; do
+  while [[ ${USE_CUSTOM_PATCHES} != true && ${USE_CUSTOM_PATCHES} != false ]]; do
     echo -ne "\nDo you want the nginx patches to be applied ? (Y/n) [Y] : " && read -r USE_CUSTOM_PATCHES
     case "${USE_CUSTOM_PATCHES}" in
       [Yy]* )
@@ -546,7 +547,7 @@ if [ "$INTERACTIVE" = true ]; then
     esac
   done
 
-  while [[ "$USE_CUSTOM_CONFIGS" != true && "$USE_CUSTOM_CONFIGS" != false ]]; do
+  while [[ ${USE_CUSTOM_CONFIGS} != true && ${USE_CUSTOM_CONFIGS} != false ]]; do
     echo -ne "\nDo you want the custom configs added to /etc/nginx ? (Y/n) [Y] : " && read -r USE_CUSTOM_CONFIGS
     case "${USE_CUSTOM_CONFIGS}" in
       [Yy]* )
@@ -562,7 +563,7 @@ if [ "$INTERACTIVE" = true ]; then
   done
 fi
 
-if [ "$NGINX_RELEASE" = "2" ]; then
+if [[ ${NGINX_RELEASE} = 2 ]]; then
   NGINX_VERSION="${NGINX_STABLE}"
   NGINX_SUBVERSION="${NGINX_STABLE_SUB}"
 else
@@ -570,9 +571,9 @@ else
   NGINX_SUBVERSION="${NGINX_MAINLINE_SUB}"
 fi
 
-if [ "$SSL_LIB_CHOICE" = "1" ]; then
+if [[ ${SSL_LIB_CHOICE} = 1 ]]; then
   LIBRESSL=false
-  if [ "$OPENSSL_LIB" = "1" ]; then
+  if [[ ${OPENSSL_LIB} = 1 ]]; then
     LATEST_OPENSSL=true
   else
     LATEST_OPENSSL=false
@@ -584,7 +585,7 @@ fi
 
 
 # Load config for defaults and to build the final arrays used
-if [ ! -f "./config" ]; then
+if [[ ! -f ./config ]]; then
   echo "config file not found."
   exit 1;
 fi
@@ -594,11 +595,11 @@ source ./config
 echo "" >$output_log
 
 # Pagespeed Psol has different urls for versions passed 1.14.x
-if [ "${PAGESPEED}" = true ]; then
+if [[ ${PAGESPEED} = true ]]; then
   for (( i = 0; i <= $package_counter; i++ ))
   do
-    if [ "${Sources[$i,Package]}" = "Pagespeed Psol" ]; then
-      if [ "${PAGESPEED_RELEASE}" = "1" ]; then
+    if [[ ${Sources[$i,Package]} = "Pagespeed Psol" ]]; then
+      if [[ ${PAGESPEED_RELEASE} = 1 ]]; then
         Sources[$i,DLFile]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
         Sources[$i,DLUrl]="https://dist.apache.org/repos/dist/release/incubator/pagespeed/${PSOL_VERSION}/x64/psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
         Sources[$i,DLFinal]="psol-${PSOL_VERSION}-apache-incubating-x64.tar.gz"
@@ -612,13 +613,13 @@ if [ "${PAGESPEED}" = true ]; then
 fi
 
 # Ensure http3 uses the right ssl
-if [ "${BUILD_HTTP3}" = true ]; then
+if [[ ${BUILD_HTTP3} = true ]]; then
   for (( i = 0; i <= $package_counter; i++ ))
   do
-    if [[ "${Sources[$i,Package]}" == "OpenSSL" || "${Sources[$i,Package]}" == "LibreSSL" ]]; then
+    if [[ ${Sources[$i,Package]} = OpenSSL || ${Sources[$i,Package]} = LibreSSL ]]; then
       Sources[$i,Install]=false
     fi
-    if [ "${Sources[$i,Package]}" == "BoringSSL" ]; then
+    if [[ ${Sources[$i,Package]} = BoringSSL ]]; then
       Sources[$i,Install]=true
     fi
   done
@@ -641,7 +642,7 @@ if ! command_exists lsb_release; then
 fi
 
 # Report any missing packages
-if [ ! -z "${missing_packages}" ]; then
+if [[ ! -z ${missing_packages} ]]; then
   echo "Please install the following package(s) :${missing_packages}"
   exit 1;
 fi
@@ -653,31 +654,31 @@ modules_disabled=""
 SETUP_DYNAMIC=false
 for (( i = 0; i <= $package_counter; i++ ))
 do
-  if [ "${Sources[$i,Install]}" = true ]; then
-    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-module" ]; then
+  if [[ ${Sources[$i,Install]} = true ]]; then
+    if [[ ${Sources[$i,ConfigureSwitch]} = --add-module ]]; then
       modules_static="${modules_static} ${Sources[$i,Package]},"
     fi
-    if [ "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]; then
+    if [[ ${Sources[$i,ConfigureSwitch]} = --add-dynamic-module ]]; then
       modules_dynamic="${modules_dynamic} ${Sources[$i,Package]},"
     fi
   else
-    if [[ "${Sources[$i,ConfigureSwitch]}" == "--add-module" || "${Sources[$i,ConfigureSwitch]}" == "--add-dynamic-module" ]]; then
+    if [[ ${Sources[$i,ConfigureSwitch]} = --add-module || ${Sources[$i,ConfigureSwitch]} = --add-dynamic-module ]]; then
       modules_disabled="${modules_disabled} ${Sources[$i,Package]},"
     fi
   fi
 done
-if [ -z "${modules_static}" ]; then
+if [[ -z ${modules_static} ]]; then
   modules_static=" None"
 else
   modules_static="${modules_static::-1}"
 fi
-if [ -z "${modules_dynamic}" ]; then
+if [[ -z ${modules_dynamic} ]]; then
   modules_dynamic=" None"
 else
   modules_dynamic="${modules_dynamic::-1}"
   SETUP_DYNAMIC=true
 fi
-if [ -z "${modules_disabled}" ]; then
+if [[ -z ${modules_disabled} ]]; then
   modules_disabled=" None"
 else
   modules_disabled="${modules_disabled::-1}"
@@ -698,32 +699,32 @@ echo " Detected Arch : ${OS_ARCH}"
 echo " Logging in    : ${output_log}"
 echo ""
 echo -e "  - Nginx release : ${NGINX_VERSION}-${NGINX_SUBVERSION}"
-if [ "${BUILD_HTTP3}" = true ]; then
+if [[ ${BUILD_HTTP3} = true ]]; then
   echo -e "  - SSL : BoringSSL (HTTP/3)"
 else
-  if [ "${LATEST_OPENSSL}" = true ]; then
+  if [[ ${LATEST_OPENSSL} = true ]]; then
     echo -e "  - OpenSSL : ${OPENSSL_VERSION}"
   else
-    if [ "${LIBRESSL}" = true ]; then
+    if [[ ${LIBRESSL} = true ]]; then
       echo -e "  - LibreSSL : ${LIBRESSL_VERSION}"
     else
       echo -e "  - OpenSSL : Distro Default"
     fi
   fi
 fi
-if [ "${PAGESPEED}" = true ]; then
+if [[ ${PAGESPEED} = true ]]; then
   echo -e "  - Pagespeed : ${PAGESPEED_VERSION}"
 fi
 echo "  - Static modules :${modules_static}"
 echo "  - Dynamic modules :${modules_dynamic}"
 echo "  - Disabled modules :${modules_disabled}"
 echo ""
-if [ "${USE_CUSTOM_PATCHES}" = true ]; then
+if [[ ${USE_CUSTOM_PATCHES} = true ]]; then
   echo "  - Apply Patches : Yes"
 else
   echo "  - Apply Patches : No"
 fi
-if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
+if [[ ${USE_CUSTOM_CONFIGS} = true ]]; then
   echo "  - Add custom configs : Yes"
 else
   echo "  - Add custom configs : No"
@@ -736,22 +737,22 @@ echo -e "\n${CGREEN}##################################${CEND}\n"
 # Fetch sources
 ##################################
 echo -ne "       Downloading Modules                    "
-if [ ! -d "src" ]; then
+if [[ ! -d src ]]; then
   mkdir src
 fi
 cd src
 
 for (( i = 0; i <= $package_counter; i++ ))
 do
-  if [ "${Sources[$i,Install]}" = true ]; then
-    if [ "${Sources[$i,Git]}" = true ]; then
-      if [ ! -d "${Sources[$i,DLFinal]}" ]; then
+  if [[ ${Sources[$i,Install]} = true ]]; then
+    if [[ ${Sources[$i,Git]} = true ]]; then
+      if [[ ! -d ${Sources[$i,DLFinal]} ]]; then
         git clone --recursive "${Sources[$i,DLUrl]}" >>$output_log 2>&1
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
           fail "Something went wrong while cloning git repo for ${Sources[$i,Package]}"
         fi
-        if [ "${Sources[$i,DLFile]}" != "${Sources[$i,DLFinal]}" ]; then
-          if [ -d "${Sources[$i,DLFile]}" ]; then
+        if [[ ${Sources[$i,DLFile]} != ${Sources[$i,DLFinal]} ]]; then
+          if [[ -d ${Sources[$i,DLFile]} ]]; then
             mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
           fi
         fi
@@ -759,29 +760,29 @@ do
       else
         cd "${Sources[$i,DLFinal]}"
         git pull --recurse-submodules >>$output_log 2>&1
-        if [ $? -ne 0 ]; then
+        if [[ $? -ne 0 ]]; then
           fail "Something went wrong while updating git repo for ${Sources[$i,Package]}"
         fi
         cd ..
         echo "${Sources[$i,Package]} up2date: OK" >>$output_log 2>&1
       fi
     else
-      if [ ! -f "${Sources[$i,DLFinal]}" ]; then
+      if [[ ! -f ${Sources[$i,DLFinal]} ]]; then
         wget "${Sources[$i,DLUrl]}" >>$output_log 2>&1
-        if [ $? -ne 0 ]; then
-          if [ ! -z "${Sources[$i,DLAltUrl]}" ]; then
+        if [[ $? -ne 0 ]]; then
+          if [[ ! -z ${Sources[$i,DLAltUrl]} ]]; then
             wget "${Sources[$i,DLAltUrl]}" >>$output_log 2>&1
           else
             fail "Downloading ${Sources[$i,Package]} failed, no alternative url supplied."
           fi
         fi
       fi
-      if [ "${Sources[$i,DLFile]}" != "${Sources[$i,DLFinal]}" ]; then
-        if [ -f "${Sources[$i,DLFile]}" ]; then
+      if [[ ${Sources[$i,DLFile]} != ${Sources[$i,DLFinal]} ]]; then
+        if [[ -f ${Sources[$i,DLFile]} ]]; then
           mv "${Sources[$i,DLFile]}" "${Sources[$i,DLFinal]}"
         fi
       fi
-      if [ ! -f "${Sources[$i,DLFinal]}" ]; then
+      if [[ ! -f ${Sources[$i,DLFinal]} ]]; then
         fail "${Sources[$i,DLFinal]} was not found."
       else
         echo "${Sources[$i,Package]} : Found." >>$output_log 2>&1
@@ -798,7 +799,7 @@ echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 # Setup build directory
 ##################################
 echo -ne "       Setup Build folder                     "
-if [ ! -d "build" ]; then
+if [[ ! -d build ]]; then
   mkdir build
 else
   rm -Rf build
@@ -811,9 +812,9 @@ cd "nginx-${NGINX_VERSION}"
 tar -xf "${WORKPWD}/src/nginx_${NGINX_VERSION}-${NGINX_SUBVERSION}~${DISTRO_CODENAME}.debian.tar.xz" >>$output_log 2>&1
 cd debian
 mkdir modules
-if [ "${BUILD_HTTP3}" = true ]; then
+if [[ ${BUILD_HTTP3} = true ]]; then
   cd "${WORKPWD}/src"
-  if [ ! -d "nginx-quic" ]; then
+  if [[ ! -d nginx-quic ]]; then
     hg clone -b quic "${NGINX_QUIC_HG}" >>$output_log 2>&1
   else
     cd nginx-quic
@@ -823,7 +824,7 @@ if [ "${BUILD_HTTP3}" = true ]; then
   rsync -r "${WORKPWD}/src/nginx-quic/" "${WORKPWD}/build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
 fi
 
-if [ "${SETUP_DYNAMIC}" = true ]; then
+if [[ ${SETUP_DYNAMIC} = true ]]; then
   cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/modules"
   wget https://hg.nginx.org/pkg-oss/raw-file/default/build_module.sh >>$output_log 2>&1
   chmod a+x build_module.sh
@@ -833,27 +834,27 @@ fi
 
 for (( i = 2; i <= $package_counter; i++ ))
 do
-  if [ "${Sources[$i,Install]}" = true ]; then
+  if [[ ${Sources[$i,Install]} = true ]]; then
     cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/${Sources[$i,UnpackLoc]}"
-    if [ "${Sources[$i,Git]}" = true ]; then
+    if [[ ${Sources[$i,Git]} = true ]]; then
       cp -R "${WORKPWD}/src/${Sources[$i,DLFinal]}/" .
     else
       tar -zxf "${WORKPWD}/src/${Sources[$i,DLFinal]}" >>$output_log 2>&1
     fi
-    if [ ! -z "${Sources[$i,ConfigureSwitch]}" ]; then
+    if [[ ! -z ${Sources[$i,ConfigureSwitch]} ]]; then
       cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
-      if [ "${Sources[$i,Package]}" = "Naxsi" ]; then
+      if [[ ${Sources[$i,Package]} = Naxsi ]]; then
         # Naxsi has a different folder structure then other modules...
         sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module ${Sources[$i,ConfigureSwitch]}=\"\$(CURDIR)\/debian\/modules\/${Sources[$i,UnpackName]}\/naxsi_src\"/g" rules >>$output_log 2>&1
-        if [ "${Sources[$i,ConfigureSwitch]}" = "--add-dynamic-module" ]; then
+        if [[ ${Sources[$i,ConfigureSwitch]} = --add-dynamic-module ]]; then
           echo "./build_module.sh -y -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/naxsi_src/" >> modules/build_modules.sh
         fi
       else
         sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module ${Sources[$i,ConfigureSwitch]}=\"\$(CURDIR)\/debian\/modules\/${Sources[$i,UnpackName]}\"/g" rules >>$output_log 2>&1
-        if [ "${Sources[$i,ConfigureSwitch]}" = "--add-dynamic-module" ]; then
-          if [ "${Sources[$i,Package]}" = "Pagespeed" ]; then
+        if [[ ${Sources[$i,ConfigureSwitch]} = --add-dynamic-module ]]; then
+          if [[ ${Sources[$i,Package]} = Pagespeed ]]; then
             echo "echo y|./build_module.sh -y -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/." >> modules/build_modules.sh
-          elif [[ "${Sources[$i,Package]}" = "Brotli" || "${Sources[$i,Package]}" = "Cache Purge" ]]; then
+          elif [[ ${Sources[$i,Package]} = Brotli || ${Sources[$i,Package]} = "Cache Purge" ]]; then
             echo "./build_module.sh -y -f -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/." >> modules/build_modules.sh
           else
             echo "./build_module.sh -y -v ${NGINX_VERSION} -o /output/ -n ${Sources[$i,Nickname]} ${Sources[$i,UnpackName]}/." >> modules/build_modules.sh
@@ -863,7 +864,7 @@ do
     fi
   fi
 done
-if [ "${BUILD_HTTP3}" = true ]; then
+if [[ ${BUILD_HTTP3} = true ]]; then
   cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v3_module --with-http_quic_module --with-stream_quic_module/g" rules >>$output_log 2>&1
   sed -i "s/CFLAGS=\"\"/CFLAGS=\"-Wno-ignored-qualifiers\"/g" rules >>$output_log 2>&1
@@ -878,18 +879,18 @@ echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 echo -ne "       Applying nginx patches                 "
 
 cd "${WORKPWD}/build/nginx-${NGINX_VERSION}"
-if [ "${LATEST_OPENSSL}" = true ]; then
-  if [ "${OPENSSL_VERSION::1}" = "3" ]; then
+if [[ ${LATEST_OPENSSL} = true ]]; then
+  if [[ ${OPENSSL_VERSION::1} = 3 ]]; then
     patch -p0 < "${WORKPWD}/custom/patches/openssl-3.0.x-compile.patch" >>$output_log 2>&1
   else
     patch -p0 < "${WORKPWD}/custom/patches/openssl-1.1.x-compile.patch" >>$output_log 2>&1
   fi
 fi
-if [ "${LIBRESSL}" = true ]; then
+if [[ ${LIBRESSL} = true ]]; then
   patch -p0 < "${WORKPWD}/custom/patches/openssl-3.0.x-compile.patch" >>$output_log 2>&1
 fi
-if [ "${USE_CUSTOM_PATCHES}" = true ]; then
-  if [ ! -f ".patchdone" ]; then
+if [[ ${USE_CUSTOM_PATCHES} = true ]]; then
+  if [[ ! -f .patchdone ]]; then
     cp "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6.patch" "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch"
     sed -i "s/@CACHEPVER@/${CACHE_PURGE_VERSION}/g" "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch" >>$output_log 2>&1
     patch -p0 < "${WORKPWD}/custom/patches/nginx-version.patch" >>$output_log 2>&1
@@ -897,7 +898,7 @@ if [ "${USE_CUSTOM_PATCHES}" = true ]; then
     sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v2_hpack_enc/g" rules >>$output_log 2>&1
     patch -p0 < "${WORKPWD}/custom/patches/ngx_cache_purge-fix-compatibility-with-nginx-1.11.6_sed.patch" >>$output_log 2>&1
     cd ..
-    if [ "${BUILD_HTTP3}" = true ]; then
+    if [[ ${BUILD_HTTP3} = true ]]; then
       patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003_http3.patch" >>$output_log 2>&1
     else
       patch -p1 < "${WORKPWD}/custom/patches/ngx_cloudflare_http2_hpack_1015003.patch" >>$output_log 2>&1
@@ -919,11 +920,11 @@ cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
 echo "/etc/nginx/sites-available" >> nginx.dirs
 echo "/etc/nginx/sites-enabled" >> nginx.dirs
 echo "/var/cache/nginx/pagespeed" >> nginx.dirs
-if [ "${SETUP_DYNAMIC}" = true ]; then
+if [[ ${SETUP_DYNAMIC} = true ]]; then
   echo "/usr/share/nginx/modules" >> nginx.dirs
   for (( i = 2; i <= $package_counter; i++ ))
   do
-    if [ "${Sources[$i,ConfigureSwitch]}" = "--add-dynamic-module" ]; then
+    if [[ ${Sources[$i,ConfigureSwitch]} = --add-dynamic-module ]]; then
       sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/module-${Sources[$i,Nickname]}.conf \$\(INSTALLDIR\)\/usr\/share\/nginx\/modules\/module-${Sources[$i,Nickname]}.conf" rules >>$output_log 2>&1
       sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/module-${Sources[$i,Nickname]}.conf \$\(INSTALLDIR\)\/usr\/share\/nginx\/modules\/module-${Sources[$i,Nickname]}.conf" nginx.rules.in >>$output_log 2>&1
     fi
@@ -931,7 +932,7 @@ if [ "${SETUP_DYNAMIC}" = true ]; then
 fi
 mkdir custom
 cp -f ${WORKPWD}/custom/configs/*.conf* custom/
-if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
+if [[ ${USE_CUSTOM_CONFIGS} = true ]]; then
   echo "/etc/nginx/conf.d/custom" >> nginx.dirs
   cp -f "${WORKPWD}/custom/configs/nginx.conf" "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian/nginx.conf"
   for i in "${confs[@]}"
@@ -941,7 +942,7 @@ if [ "${USE_CUSTOM_CONFIGS}" = true ]; then
   done
   sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" rules >>$output_log 2>&1
   sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-example" nginx.rules.in >>$output_log 2>&1
-  if [ "${BUILD_HTTP3}" = true ]; then
+  if [[ ${BUILD_HTTP3} = true ]]; then
     sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" rules >>$output_log 2>&1
     sed -i "/^\tln -s \/usr.*/a \\\tinstall -m 644 debian\/custom\/virtual.conf-http3-example \$\(INSTALLDIR\)\/etc\/nginx\/sites-available\/virtual.conf-http3-example" nginx.rules.in >>$output_log 2>&1
   fi
@@ -958,7 +959,7 @@ echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 ##################################
 # Build the package
 ##################################
-if [ ! -d "output" ]; then
+if [[ ! -d output ]]; then
   mkdir output
 else
   rm -Rf output
@@ -967,7 +968,7 @@ fi
 
 echo -ne "       Preparing Docker dev image             "
 docker build -t "docker-deb-builder:${DISTRO_VERSION}" -f "docker/Dockerfile-${DISTRO_NAME}-${DISTRO_VERSION}" . >>$output_log 2>&1
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
   fail ""
 else
   echo -ne "[${CGREEN}OK${CEND}]\\r\n"
@@ -977,14 +978,14 @@ export BUILD_HTTP3
 export SETUP_DYNAMIC
 echo -ne "       Compiling nginx                        "
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output "build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
   fail ""
 else
   echo -ne "[${CGREEN}OK${CEND}]\\r\n"
 fi
 echo -ne "       Testing result package                 "
 ./docker.sh -i "docker-deb-builder:${DISTRO_VERSION}" -o output -t "nginx-${NGINX_VERSION}" "build/nginx-${NGINX_VERSION}" >>$output_log 2>&1
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
   fail ""
 else
   echo -ne "[${CGREEN}OK${CEND}]\\r\n"
@@ -995,4 +996,3 @@ echo " Result "
 ls -l output/
 echo -e "${CGREEN}##################################${CEND}"
 echo ""
-
