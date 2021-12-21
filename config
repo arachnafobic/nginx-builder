@@ -101,7 +101,7 @@ else
   fi
 fi
 
-OPENSSL_VERSION=1.1.1l
+OPENSSL_VERSION=1.1.1m
 # Openssl 3.0.0 is beeing worked on, but right now, it won't compile in this setup
 #OPENSSL_VERSION=3.0.0
 LIBRESSL_VERSION=3.4.1
