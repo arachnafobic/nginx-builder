@@ -864,6 +864,13 @@ do
     fi
   fi
 done
+if [[ ${LATEST_OPENSSL} = true ]]; then
+  if [[ ${OPENSSL_VERSION::1} = 3 ]]; then
+    DEB_CFLAGS='-m64 -march=native -mtune=native -DTCP_FASTOPEN=23 -g -O3 -fstack-protector-strong -flto -ffat-lto-objects -fuse-ld=gold --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wimplicit-fallthrough=0 -fcode-hoisting -Wp,-D_FORTIFY_SOURCE=2 -gsplit-dwarf'
+    DEB_LFLAGS='-lrt -ljemalloc -Wl,-z,relro -Wl,-z,now -fPIC -flto -ffat-lto-objects'
+    sed -i "s/CFLAGS=\"\"/CFLAGS=\"${DEB_CFLAGS}\"/g" rules >>$output_log 2>&1
+  fi
+fi
 if [[ ${BUILD_HTTP3} = true ]]; then
   cd "${WORKPWD}/build/nginx-${NGINX_VERSION}/debian"
   sed -i "s/--with-mail_ssl_module/--with-mail_ssl_module --with-http_v3_module --with-http_quic_module --with-stream_quic_module/g" rules >>$output_log 2>&1
