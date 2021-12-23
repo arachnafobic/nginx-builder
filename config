@@ -164,7 +164,7 @@ Sources[$package_counter,Git]=false
 Sources[$package_counter,UnpackLoc]="debian/modules"
 Sources[$package_counter,UnpackName]="openssl-${OPENSSL_VERSION}"
 if [[ ${OPENSSL_VERSION::1} = 3 ]]; then
-  Sources[$package_counter,ConfigureSwitch]="--with-openssl-opt='enable-ec_nistp_64_gcc_128 enable-tls1_3 no-ssl3-method -march=native -Wno-error' --with-openssl"
+  Sources[$package_counter,ConfigureSwitch]="--with-openssl-opt='enable-ec_nistp_64_gcc_128 enable-tls1_3 no-ssl3-method -march=native' --with-openssl"
 else
   Sources[$package_counter,ConfigureSwitch]="--with-openssl-opt='enable-ec_nistp_64_gcc_128 enable-tls1_3 no-ssl3-method -march=native' --with-openssl"
 fi

@@ -866,9 +866,12 @@ do
 done
 if [[ ${LATEST_OPENSSL} = true ]]; then
   if [[ ${OPENSSL_VERSION::1} = 3 ]]; then
-    DEB_CFLAGS='-m64 -march=native -mtune=native -DTCP_FASTOPEN=23 -g -O3 -fstack-protector-strong -flto -ffat-lto-objects -fuse-ld=gold --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wimplicit-fallthrough=0 -fcode-hoisting -Wp,-D_FORTIFY_SOURCE=2 -gsplit-dwarf'
-    DEB_LFLAGS='-lrt -ljemalloc -Wl,-z,relro -Wl,-z,now -fPIC -flto -ffat-lto-objects'
-    sed -i "s/CFLAGS=\"\"/CFLAGS=\"${DEB_CFLAGS}\"/g" rules >>$output_log 2>&1
+#    DEB_CFLAGS='-m64 -march=native -mtune=native -DTCP_FASTOPEN=23 -g -O3 -fstack-protector-strong -flto -ffat-lto-objects -fuse-ld=gold --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wimplicit-fallthrough=0 -fcode-hoisting -Wp,-D_FORTIFY_SOURCE=2 -gsplit-dwarf'
+#    DEB_LFLAGS='-lrt -ljemalloc -Wl,-z,relro -Wl,-z,now -fPIC -flto -ffat-lto-objects'
+    DEB_CFLAGS='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC -Wno-error'
+    DEB_LDFLAGS='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie -Wno-error'
+
+    sed -i "s/CFLAGS=\"\"/CFLAGS=\"${DEB_CFLAGS}\" LDFLAGS=\"${DEB_LDFLAGS}\"/g" rules >>$output_log 2>&1
   fi
 fi
 if [[ ${BUILD_HTTP3} = true ]]; then
