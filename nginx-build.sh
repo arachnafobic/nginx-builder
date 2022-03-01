@@ -8,11 +8,6 @@ echo " -------------------------------------------------------------------------
 ##################################
 # Initialize
 ##################################
-if [[ ${LATEST_OPENSSL} = true && ${LIBRESSL} = true ]]; then
-  echo "Both Latest OpenSSL and LibreSSL are set to true in the config, this is not possible to run."
-  exit 1;
-fi
-
 _help() {
   echo ""
   echo "Usage: ./nginx-build.sh <options>"
@@ -590,6 +585,23 @@ if [[ ! -f ./config ]]; then
   exit 1;
 fi
 source ./config
+
+if [[ ${LATEST_OPENSSL} = true && ${LIBRESSL} = true ]]; then
+  echo "Both Latest OpenSSL and LibreSSL are set to true in the config, this is not possible to run."
+  exit 1;
+fi
+
+if [[ ${NGINX_VERSION:2:2} == "21" ]]; then
+  if [[ ${NGINX_VERSION:5} > 4 ]]; then
+    if [[ ${NAXSI} = true || ${MODSECURITY} = true ]]; then
+      if [[ ${NAXSI_VERSION} < "1.4" || ${MODSECURITY_VERSION} < "1.0.3" ]]; then
+        echo "You have selected an nginx release higher then 1.21.4, this version is incompatible with naxsi <1.3 and modsecurity <1.0.2"
+        echo "Please adjust in the config and retry"
+        exit 1;
+      fi
+    fi
+  fi
+fi
 
 # clean previous install log
 echo "" >$output_log
